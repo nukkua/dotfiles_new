@@ -1,11 +1,7 @@
 i3, simple terminal, xorg, picom, polybar, starship, bash, nvim, tmux
-
 feh
-
 betterdiscordctl, discord, spotify, firefox
 brightnessctl
-
 zathura
-
 
 FiraCode NerdFont
