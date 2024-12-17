@@ -1,0 +1,6 @@
+goes in ~/.tmux.conf
+
+touch a file por the script  in ~/scripts/coding_session.sh
+chmod +x that file
+
+
