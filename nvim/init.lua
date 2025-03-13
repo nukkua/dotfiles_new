@@ -37,7 +37,6 @@ require('packer').startup(function(use)
 	use('tpope/vim-commentary')
 	use('kyazdani42/nvim-web-devicons')
 	use('MaxMEllon/vim-jsx-pretty')
-	use('junegunn/fzf.vim')
 	use('mattn/emmet-vim')
 	use('machakann/vim-sandwich')
 	use {
@@ -125,6 +124,7 @@ require 'snippets.php'
 require 'snippets.vue'
 require 'snippets.react'
 require 'snippets.astro'
+require 'plugins.telescope'
 
 
 

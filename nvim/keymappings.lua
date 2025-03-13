@@ -36,12 +36,37 @@ vim.api.nvim_set_keymap('n', '<Space>q', ':q<CR>', { noremap = true, silent = tr
 
 -- vim.api.nvim_set_keymap('n', '<Space>e', ':Neoformat<CR>', { noremap = true, silent = true })
 
-vim.api.nvim_set_keymap('n', '<Space>f', ':Files<CR>', { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap('n', '<Space>f', ':Files<CR>', { noremap = true, silent = true })
 
-vim.api.nvim_set_keymap('n', '<Space>g', ':Ag<CR>', { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap('n', '<Space>g', ':Ag<CR>', { noremap = true, silent = true })
 
 
--- Usando <Leader>cc como ejemplo
+vim.api.nvim_set_keymap('n', '<Space>f', ":lua require('telescope.builtin').find_files()<CR>",
+	{ noremap = true, silent = true })
+
+-- Buscar texto en el proyecto
+vim.api.nvim_set_keymap('n', '<Space>g', ":lua require('telescope.builtin').live_grep()<CR>",
+	{ noremap = true, silent = true })
+
+-- Cambiar entre buffers abiertos
+vim.api.nvim_set_keymap('n', '<Space>b', ":lua require('telescope.builtin').buffers()<CR>",
+	{ noremap = true, silent = true })
+
+-- Buscar en la ayuda de Neovim
+vim.api.nvim_set_keymap('n', '<Space>h', ":lua require('telescope.builtin').help_tags()<CR>",
+	{ noremap = true, silent = true })
+
+-- Buscar comandos recientes
+vim.api.nvim_set_keymap('n', '<Space>r', ":lua require('telescope.builtin').command_history()<CR>",
+	{ noremap = true, silent = true })
+
+vim.api.nvim_set_keymap('n', '<Space>o', ":lua require('telescope.builtin').oldfiles()<CR>",
+	{ noremap = true, silent = true })
+
+vim.api.nvim_set_keymap('n', '<Space>i', ":lua require('telescope.builtin').git_branches()<CR>",
+	{ noremap = true, silent = true })
+
+-- commentary
 vim.api.nvim_set_keymap('n', '<Space>/', ':Commentary<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<Space>/', ':Commentary<CR>', { noremap = true, silent = true })
 
@@ -63,12 +88,14 @@ vim.api.nvim_set_keymap('v', '<C-k>', ':m \'<-2<CR>gv=gv', options)
 
 -- harpoon
 
-vim.keymap.set("n", "<leader>a", ':lua require("harpoon.mark").add_file()<CR>')
-vim.keymap.set("n", "<C-e>", ':lua require("harpoon.ui").toggle_quick_menu()<CR>')
+vim.keymap.set("n", ",,", ':lua require("harpoon.mark").add_file()<CR>')
+vim.keymap.set("n", ",e", ':lua require("harpoon.ui").toggle_quick_menu()<CR>')
 
-vim.keymap.set("n", "<C-h>", ':lua require("harpoon.ui").nav_file(1)<CR>')
-vim.keymap.set("n", "<C-t>", ':lua require("harpoon.ui").nav_file(2)<CR>')
-vim.keymap.set("n", "<C-s>", ':lua require("harpoon.ui").nav_file(3)<CR>')
+vim.keymap.set("n", ",a", ':lua require("harpoon.ui").nav_file(1)<CR>')
+vim.keymap.set("n", ",s", ':lua require("harpoon.ui").nav_file(2)<CR>')
+vim.keymap.set("n", ",d", ':lua require("harpoon.ui").nav_file(3)<CR>')
+vim.keymap.set("n", ",f", ':lua require("harpoon.ui").nav_file(4)<CR>')
+
 -- ':lua require("harpoon.ui").nav_next()'
 -- ':lua require("harpoon.ui").nav_prev()'
 -- vim.keymap.set("n", "<C-t>",)
@@ -96,7 +123,7 @@ vim.opt.smartindent = true
 vim.keymap.set('n', '<leader>pe', vim.diagnostic.open_float, { noremap = true, silent = true })
 
 -- highlight line
-vim.opt.cursorline = true
+vim.opt.cursorline = false
 
 vim.g.UltiSnipsExpandTrigger = '<tab>'
 vim.g.UltiSnipsJumpForwardTrigger = '<tab>'
@@ -104,6 +131,17 @@ vim.g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
 vim.g.UltiSnipsEditSplit = 'vertical'
 
 
+-- laravel
 
--- Configuración de atajo para abrir netrw
--- vim.api.nvim_set_keymap('n', '<C-h>', ':Explore<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap(
+	'n',
+	'<leader>.q',
+	":lua vim.fn.system(\"xdg-open 'https://laravel.com/docs/10.x/queries'\")<CR>",
+	{ noremap = true, silent = true }
+)
+vim.api.nvim_set_keymap(
+	'n',
+	'<leader>.v',
+	":lua vim.fn.system(\"xdg-open 'https://laravel.com/docs/11.x/validation'\")<CR>",
+	{ noremap = true, silent = true }
+)
