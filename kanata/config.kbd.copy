@@ -1,0 +1,108 @@
+;; Home row mods QWERTY example with more complexity.
+;; Some of the changes from the basic example:
+;; - when a home row mod activates tap, the home row mods are disabled
+;;   while continuing to type rapidly
+;; - tap-hold-release helps make the hold action more responsive
+;; - pressing another key on the same half of the keyboard
+;;   as the home row mod will activate an early tap action
+
+(defcfg
+  process-unmapped-keys yes
+  concurrent-tap-hold     yes
+)
+
+(defsrc
+  a  s  l  h  j  k  ;
+  caps
+  ralt
+  tab
+  q  w  e  r  t  y  u  i  o  p
+)
+
+(defvar
+  ;; Note: consider using different time values for your different fingers.
+  ;; For example, your pinkies might be slower to release keys and index
+  ;; fingers faster.
+  fast-tap-time 110
+  fast-hold-time 100
+  tap-time 180
+  hold-time 170
+
+  left-hand-keys (
+    q w e r t
+    a s d f g
+    z x c v b
+  )
+  right-hand-keys (
+    y u i o p
+    h j k l ;
+    n m , . /
+  )
+)
+
+
+(deflayer base
+  @a  @s  @l  @h  @j  @k  @;
+  @caps
+  @ralt
+  @tab
+  @q  @w  @e  @r  @t  @y  @u  @i  @o  @p
+)
+
+(deflayer nomods
+  a  s  l  h  j  k  ;
+  caps
+  ralt
+  tab
+  q  w  e  r  t  y  u  i  o  p
+)
+
+(deflayer numbers
+  _  _  _  _  _  _  _
+  _
+  _
+  _
+  1  2  3  4  5  6  7  8  9  0
+)
+(deflayer arrows
+  _  _  rght  left  down  up  _
+  _
+  _
+  _
+  _  _  _  _  _  _  _  _  _  _
+)
+
+
+(deffakekeys
+  to-base (layer-switch base)
+)
+(defalias
+  tap (multi
+    (layer-switch nomods)
+    (on-idle-fakekey to-base tap 20)
+  )
+  s (tap-hold-release-keys $tap-time $hold-time (multi s @tap) lsft $left-hand-keys)
+  a (tap-hold-release-keys 200 190 (multi a @tap) lctl $left-hand-keys)
+  l (tap-hold-release-keys $tap-time $hold-time (multi l @tap) rsft $right-hand-keys)
+  ; (tap-hold-release-keys $fast-tap-time $fast-hold-time (multi ; @tap) rctl $right-hand-keys)
+  caps (tap-hold-press 1 1 bspc bspc)
+  ralt (tap-hold-press 1 1 ralt (layer-toggle numbers))
+  tab (tap-hold-press 150 200 tab (layer-toggle arrows))
+  q (multi q @tap) 
+  w (multi w @tap) 
+  e (multi e @tap) 
+  r (multi r @tap) 
+  t (multi t @tap) 
+  y (multi y @tap) 
+  u (multi u @tap) 
+  i (multi i @tap) 
+  o (multi o @tap) 
+  p (multi p @tap) 
+  h (multi h @tap) 
+  j (multi j @tap) 
+  k (multi k @tap) 
+)
+
+
+
+
