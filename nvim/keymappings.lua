@@ -42,29 +42,29 @@ vim.api.nvim_set_keymap('n', '<Space>q', ':q<CR>', { noremap = true, silent = tr
 
 
 vim.api.nvim_set_keymap('n', '<Space>f', ":lua require('telescope.builtin').find_files()<CR>",
-	{ noremap = true, silent = true })
+    { noremap = true, silent = true })
 
 -- Buscar texto en el proyecto
 vim.api.nvim_set_keymap('n', '<Space>g', ":lua require('telescope.builtin').live_grep()<CR>",
-	{ noremap = true, silent = true })
+    { noremap = true, silent = true })
 
 -- Cambiar entre buffers abiertos
 vim.api.nvim_set_keymap('n', '<Space>b', ":lua require('telescope.builtin').buffers()<CR>",
-	{ noremap = true, silent = true })
+    { noremap = true, silent = true })
 
 -- Buscar en la ayuda de Neovim
 vim.api.nvim_set_keymap('n', '<Space>h', ":lua require('telescope.builtin').help_tags()<CR>",
-	{ noremap = true, silent = true })
+    { noremap = true, silent = true })
 
 -- Buscar comandos recientes
 vim.api.nvim_set_keymap('n', '<Space>r', ":lua require('telescope.builtin').command_history()<CR>",
-	{ noremap = true, silent = true })
+    { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('n', '<Space>o', ":lua require('telescope.builtin').oldfiles()<CR>",
-	{ noremap = true, silent = true })
+    { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('n', '<Space>i', ":lua require('telescope.builtin').git_branches()<CR>",
-	{ noremap = true, silent = true })
+    { noremap = true, silent = true })
 
 -- commentary
 vim.api.nvim_set_keymap('n', '<Space>/', ':Commentary<CR>', { noremap = true, silent = true })
@@ -111,12 +111,13 @@ vim.opt.relativenumber = true
 vim.opt.number = true
 
 -- Indentación
-vim.bo.tabstop = 4
-vim.bo.shiftwidth = 4
-vim.bo.softtabstop = 4
-vim.bo.expandtab = true
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.softtabstop = 4
+vim.opt.expandtab = true
 
-vim.opt.smartindent = true
+vim.opt.autoindent = true
+vim.opt.smartindent = false
 
 
 -- More info about diagnostic
@@ -134,14 +135,14 @@ vim.g.UltiSnipsEditSplit = 'vertical'
 -- laravel
 
 vim.api.nvim_set_keymap(
-	'n',
-	'<leader>.q',
-	":lua vim.fn.system(\"xdg-open 'https://laravel.com/docs/10.x/queries'\")<CR>",
-	{ noremap = true, silent = true }
+    'n',
+    '<leader>.q',
+    ":lua vim.fn.system(\"xdg-open 'https://laravel.com/docs/10.x/queries'\")<CR>",
+    { noremap = true, silent = true }
 )
 vim.api.nvim_set_keymap(
-	'n',
-	'<leader>.v',
-	":lua vim.fn.system(\"xdg-open 'https://laravel.com/docs/11.x/validation'\")<CR>",
-	{ noremap = true, silent = true }
+    'n',
+    '<leader>.v',
+    ":lua vim.fn.system(\"xdg-open 'https://laravel.com/docs/11.x/validation'\")<CR>",
+    { noremap = true, silent = true }
 )

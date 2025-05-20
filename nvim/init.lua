@@ -1,8 +1,8 @@
 -- Asegúrate de que packer esté instalado
 local install_path = vim.fn.stdpath('data') .. '/site/pack/packer/start/packer.nvim'
 if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
-	vim.cmd('!git clone https://github.com/wbthomason/packer.nvim ' .. install_path)
-	vim.cmd 'packadd packer.nvim'
+    vim.cmd('!git clone https://github.com/wbthomason/packer.nvim ' .. install_path)
+    vim.cmd 'packadd packer.nvim'
 end
 
 vim.g.copilot_proxy = 'https://localhost:11435'
@@ -18,69 +18,69 @@ package.path = config_path .. "/?/init.lua;" .. package.path
 vim.opt.termguicolors = true
 
 require('packer').startup(function(use)
-	use('wbthomason/packer.nvim')
-	use {
-		'xeluxee/competitest.nvim',
-		requires = 'MunifTanjim/nui.nvim',
-		config = function() require('competitest').setup() end
-	}
-	use {
-		'ricardoramirezr/blade-nav.nvim',
-		requires = {
-			{ "ms-jpq/coq_nvim", branch = "coq" }, -- if using coq
-		},
-		ft = { 'blade', 'php' }
-	}
-	-- use('jwalton512/vim-blade')
-	use("Djancyp/better-comments.nvim")
-	use('sbdchd/neoformat')
-	use('tpope/vim-commentary')
-	use('kyazdani42/nvim-web-devicons')
-	use('MaxMEllon/vim-jsx-pretty')
-	use('mattn/emmet-vim')
-	use('machakann/vim-sandwich')
-	use {
-		'nvim-telescope/telescope.nvim',
-		requires = { 'nvim-lua/plenary.nvim' }
-	}
-	use("folke/zen-mode.nvim")
-	use('nvim-treesitter/nvim-treesitter', { run = ':TSUpdate' })
-	use('nvim-treesitter/playground')
-	use('theprimeagen/harpoon')
-	use('mbbill/undotree')
-	use('tpope/vim-fugitive')
-	use('nvim-treesitter/nvim-treesitter-context')
-	use {
-		'nvim-lualine/lualine.nvim',
-		requires = { 'nvim-tree/nvim-web-devicons', opt = true }
-	}
+    use('wbthomason/packer.nvim')
+    use {
+        'xeluxee/competitest.nvim',
+        requires = 'MunifTanjim/nui.nvim',
+        config = function() require('competitest').setup() end
+    }
+    use {
+        'ricardoramirezr/blade-nav.nvim',
+        requires = {
+            { "ms-jpq/coq_nvim", branch = "coq" }, -- if using coq
+        },
+        ft = { 'blade', 'php' }
+    }
+    -- use('jwalton512/vim-blade')
+    use("Djancyp/better-comments.nvim")
+    use('sbdchd/neoformat')
+    use('tpope/vim-commentary')
+    use('kyazdani42/nvim-web-devicons')
+    use('MaxMEllon/vim-jsx-pretty')
+    use('mattn/emmet-vim')
+    use('machakann/vim-sandwich')
+    use {
+        'nvim-telescope/telescope.nvim',
+        requires = { 'nvim-lua/plenary.nvim' }
+    }
+    use("folke/zen-mode.nvim")
+    use('nvim-treesitter/nvim-treesitter', { run = ':TSUpdate' })
+    use('nvim-treesitter/playground')
+    use('theprimeagen/harpoon')
+    use('mbbill/undotree')
+    use('tpope/vim-fugitive')
+    use('nvim-treesitter/nvim-treesitter-context')
+    use {
+        'nvim-lualine/lualine.nvim',
+        requires = { 'nvim-tree/nvim-web-devicons', opt = true }
+    }
 
-	use {
-		'VonHeikemen/lsp-zero.nvim',
-		branch = 'v3.x',
-		requires = {
-			{ 'williamboman/mason.nvim' },
-			{ 'williamboman/mason-lspconfig.nvim' },
+    use {
+        'VonHeikemen/lsp-zero.nvim',
+        branch = 'v3.x',
+        requires = {
+            { 'williamboman/mason.nvim' },
+            { 'williamboman/mason-lspconfig.nvim' },
 
-			-- LSP Support
-			{ 'neovim/nvim-lspconfig' },
-			{ 'hrsh7th/cmp-buffer' },
-			{ 'hrsh7th/cmp-path' },
-			{ 'saadparwaiz1/cmp_luasnip' },
-			-- Autocompletion
-			{ 'hrsh7th/nvim-cmp' },
-			{ 'hrsh7th/cmp-nvim-lsp' },
-			{ 'hrsh7th/cmp-nvim-lua' },
-			-- Snippets
-			{ 'L3MON4D3/LuaSnip' },
-			{ 'rafamadriz/friendly-snippets' },
-		}
-	}
+            -- LSP Support
+            { 'neovim/nvim-lspconfig' },
+            { 'hrsh7th/cmp-buffer' },
+            { 'hrsh7th/cmp-path' },
+            { 'saadparwaiz1/cmp_luasnip' },
+            -- Autocompletion
+            { 'hrsh7th/nvim-cmp' },
+            { 'hrsh7th/cmp-nvim-lsp' },
+            { 'hrsh7th/cmp-nvim-lua' },
+            -- Snippets
+            { 'L3MON4D3/LuaSnip' },
+            { 'rafamadriz/friendly-snippets' },
+        }
+    }
 
-	use {
-		"windwp/nvim-autopairs",
-		config = function() require("nvim-autopairs").setup {} end
-	}
+    use {
+        "windwp/nvim-autopairs",
+        config = function() require("nvim-autopairs").setup {} end
+    }
 end)
 -- Para no tener scrollbar
 vim.wo.signcolumn = 'no'
@@ -131,45 +131,45 @@ require 'plugins.telescope'
 local cmp = require 'cmp'
 
 cmp.setup({
-	snippet = {
-		expand = function(args)
-			require 'luasnip'.lsp_expand(args.body)
-		end,
-	},
-	mapping = cmp.mapping.preset.insert({
-		['<C-b>'] = cmp.mapping.scroll_docs(-4),
-		['<C-f>'] = cmp.mapping.scroll_docs(4),
-		['<C-Space>'] = cmp.mapping.complete(),
-		['<C-e>'] = cmp.mapping.abort(),
-		['<CR>'] = cmp.mapping.confirm({ select = true }), -- Acepta la selección con Enter
-	}),
-	sources = cmp.config.sources({
-		{ name = 'nvim_lsp' },
-		{ name = 'luasnip' },
-		{ name = 'buffer' },
-		{ name = 'path' }
-	})
+    snippet = {
+        expand = function(args)
+            require 'luasnip'.lsp_expand(args.body)
+        end,
+    },
+    mapping = cmp.mapping.preset.insert({
+        ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+        ['<C-f>'] = cmp.mapping.scroll_docs(4),
+        ['<C-Space>'] = cmp.mapping.complete(),
+        ['<C-e>'] = cmp.mapping.abort(),
+        ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Acepta la selección con Enter
+    }),
+    sources = cmp.config.sources({
+        { name = 'nvim_lsp' },
+        { name = 'luasnip' },
+        { name = 'buffer' },
+        { name = 'path' }
+    })
 })
 
 -- Configuración de autopairs para trabajar con nvim-cmp
 local autopairs = require('nvim-autopairs')
 autopairs.setup({
-	check_ts = true,
-	ts_config = {
-		-- lista de lenguajes que quieres soportar
-	},
-	disable_filetype = { "TelescopePrompt" },
-	fast_wrap = {
-		map = '<M-e>',
-		chars = { '{', '[', '(', '"', "'" },
-		pattern = string.gsub([[ [%'%"%)%>%]%)%}%,] ]], '%s+', ''),
-		offset = 0, -- Desplazamiento desde el carácter actual
-		end_key = '$',
-		keys = 'qwertyuiopzxcvbnmasdfghjkl',
-		check_comma = true,
-		highlight = 'Search',
-		highlight_grey = 'Comment'
-	},
+    check_ts = true,
+    ts_config = {
+        -- lista de lenguajes que quieres soportar
+    },
+    disable_filetype = { "TelescopePrompt" },
+    fast_wrap = {
+        map = '<M-e>',
+        chars = { '{', '[', '(', '"', "'" },
+        pattern = string.gsub([[ [%'%"%)%>%]%)%}%,] ]], '%s+', ''),
+        offset = 0, -- Desplazamiento desde el carácter actual
+        end_key = '$',
+        keys = 'qwertyuiopzxcvbnmasdfghjkl',
+        check_comma = true,
+        highlight = 'Search',
+        highlight_grey = 'Comment'
+    },
 })
 
 -- Zig
@@ -178,7 +178,9 @@ vim.g.zig_executable = "/home/leverna/zig/"
 -- Integrar nvim-autopairs con nvim-cmp
 local cmp_autopairs = require('nvim-autopairs.completion.cmp')
 cmp.event:on(
-	'confirm_done',
-	cmp_autopairs.on_confirm_done({ map_char = { tex = '' } })
+    'confirm_done',
+    cmp_autopairs.on_confirm_done({ map_char = { tex = '' } })
 )
 require('competitest').setup() -- to use default configuration
+
+vim.cmd("hi StatusLine guibg=none")

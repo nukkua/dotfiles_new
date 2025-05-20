@@ -1,7 +1,7 @@
 local M = {}
 M.colors = {
     -- special
-    none = "NONE",
+    none = nil,
     bg = "#0b0708",
     fg = "#f3c6b1",
 
@@ -39,8 +39,8 @@ M.colors = {
 }
 
 
-M.colors.color16 = "#507d2a" -- Verde oliva
-M.colors.color17 = "#cc4f39" -- Terracota
+M.colors.color16 = "#507d2a"
+M.colors.color17 = "#cc4f39"
 
 
 M.palette = {
@@ -69,7 +69,7 @@ M.palette = {
     search = { bg = M.colors.color9, fg = M.colors.color7 },
     error = { fg = M.colors.color15, bg = M.colors.color1 },
     add = { fg = "#7daf69" },
-    remove = {fg = M.colors.color9 },
+    remove = { fg = M.colors.color9 },
 }
 
 M.palette.color16 = M.colors.color16

@@ -6,7 +6,7 @@ local function lsp_status()
     local s = ""
     s = '?'
     local client = vim.lsp.get_active_clients({
-        bufnr=vim.api.nvim_get_current_buf()
+        bufnr = vim.api.nvim_get_current_buf()
     })[1]
     if client ~= nil then
         s = client.name
@@ -15,7 +15,7 @@ local function lsp_status()
         end
 
         local has_pending = false
-        for k,v in pairs(client.requests) do
+        for k, v in pairs(client.requests) do
             if v.type and v.type == "pending" then
                 has_pending = true
                 break
@@ -54,7 +54,7 @@ local theme = {
         z = { bg = palette.color6, fg = palette.color7 }
     },
     command = {
-        a = { bg = palette.color13, fg = palette.color15 , gui = 'bold' },
+        a = { bg = palette.color13, fg = palette.color15, gui = 'bold' },
         b = { bg = palette.color10, fg = palette.color7 },
         c = { bg = palette.bg, fg = palette.color15 },
         x = { bg = palette.bg, fg = palette.color15, gui = 'bold' },
@@ -88,17 +88,17 @@ lualine.setup {
     },
     sections = {
         lualine_a = { 'mode' },
-        lualine_b = {'branch','diff','diagnostics'},
-        lualine_c = {'filename'},
-        lualine_x = {'encoding','fileformat','filetype'},
-        lualine_y = {'progress'},
-        lualine_z = {'location'},
+        lualine_b = { 'branch', 'diff', 'diagnostics' },
+        lualine_c = { 'filename' },
+        lualine_x = { 'encoding', 'fileformat', 'filetype' },
+        lualine_y = { 'progress' },
+        lualine_z = { 'location' },
     },
     inactive_sections = {
         lualine_a = {},
         lualine_b = {},
-        lualine_c = {'filename'},
-        lualine_x = {'location'},
+        lualine_c = { 'filename' },
+        lualine_x = { 'location' },
         lualine_y = {},
         lualine_z = {},
     },
