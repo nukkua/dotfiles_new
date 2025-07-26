@@ -51,7 +51,6 @@ require('mason-lspconfig').setup({
         'zls',
         'jqls',
         'intelephense',
-        'volar',
     },
     handlers = {
         lsp.default_setup

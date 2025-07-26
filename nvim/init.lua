@@ -184,3 +184,4 @@ cmp.event:on(
 require('competitest').setup() -- to use default configuration
 
 vim.cmd("hi StatusLine guibg=none")
+vim.opt.mouse = ""
