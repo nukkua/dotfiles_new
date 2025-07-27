@@ -38,6 +38,7 @@
 
   sym (layer-while-held sym)
   num (layer-while-held num)
+  nsy (layer-while-held nsy)
 
   msu (movemouse-up 1 1)
   msl (movemouse-left 1 1)
@@ -65,8 +66,8 @@
   @grl 6    7    8    9    [    ]    0    1    2    3    4    5    bspc
   tab  k    y    u    ,    -    v    m    h    p    j    z    =    \
   lctl d    i    e    a    o    c    s    n    t    r    w    ret
-  lsft x    /    '    .    ;    f    g    l    b    q    rsft
-  lctl lmet lalt           spc            @sym rmet lsft
+  lsft x    /    @num @nsy ;    f    g    l     b    q   rsft
+  lctl lsft lalt           spc            @sym rmet  lsft
 )
 
 
@@ -76,16 +77,16 @@
   @grl 6    7    8    9    [    ]    0    1    2    3    4    5    bspc
   tab  k    y    u    ,    -    v    m    h    p    j    z    =    \
   lctl d    i    e    a    o    c    s    n    t    r    w    ret
-  lsft x    /    '    .    ;    f    g    l     b    q   rsft
-  lctl lmet lalt           spc            @sym rmet  lsft
+  lsft x    /    @num @nsy ;    f    g    l     b    q   rsft
+  lctl lsft lalt           spc            @sym rmet  lsft
 )
 
 (deflayer num
   @grl 6    7    8    9    [    ]    0    1    2    3    4    5    bspc
-  tab  k    y    u    ,    -    v    m    @btp @png    j    z    =    \
-  bspc 6    3    1    2    7    9    4    0    5    8    w    ret
-  lsft x    /    '    .    ;    f    .    l    b    q   rsft
-  lctl lmet lalt           @hpy           spc  rmet rctl
+  tab  @btp @png .  rpt-any    -    v   @cw  '    S-'    j    z    =    \
+  bspc 6    3    1    2    7    9    4    0    5    8    bspc    ret
+  lsft x    /    '    .    f    ;    g    l    b    q   rsft
+  lctl lmet lalt           ret           spc  rmet rctl
 )
 
 
@@ -101,9 +102,17 @@
 
 (deflayer sym
   @grl 6    7    8    9    [    ]    0    1    2    3    4    5    bspc
-  tab  S-1  S-2  S-3  S-4   S-9    S-0    @mwu    @msu    @mwd    j    z    =    \
+  tab  S-1  S-2  S-3  S-4   S-9    S-0    @mwu    @msu    @mwd  grv    S-grv    =    \
   @cw  S-5  S-6  S-7  S-8   [      ]    @msl    @msd    @msr    mltp    mrtp    ret 
-  @slw grv    \  @num  S-{   ;     S-}   @txs   @txn    @txt    @txr    rsft
+  @slw S-\    \  '  S-{   ;     S-}   @txs   @txn    @txt    @txr    rsft
+  lctl lmet  bspc           ret           ralt  rmet rctl
+)
+
+(deflayer nsy
+  @grl 6    7    8    9    [    ]    0    1    2    3    4    5    bspc
+  tab  S-1  S-2  S-3  S-4   S-9    S-0    left  up  down  right  S-grv    =    \
+  @cw  S-5  S-6  S-7  S-8   [      ]    tab    spc    ret    rpt-any    bspc    ret 
+  @slw S-\    \  '  S-{   ;     S-}   @txs   @txn    @txt    @txr    rsft
   lctl lmet  bspc           ret           ralt  rmet rctl
 )
 
