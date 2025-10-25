@@ -51,11 +51,8 @@
   cw (caps-word 2000)
   hpy (macro s u d o spc p a c m a n spc - S-s y u spc - - n o c o n f i r m ret)
   png (macro f a s t f e t c h ret)
-
   btp (macro b t o p ret)
-  tar (macro - S-.)
-  tur (macro S-; S-;)
-  tir (macro = S-.)
+
   txs (macro C-Space 50 s)
   txn (macro C-Space 50 n)
   txt (macro C-Space 50 t)
@@ -67,7 +64,7 @@
 
 (deflayer nomods
   @grl 6    7    8    9    [    ]    0    1    2    3    4    5    bspc
-  tab  k    y    u    ,    -    v    m    h    p    j    v    =    \
+  tab  k    y    u    ,    -    v    m    h    p    j    z    =    \
   lctl d    i    e    a    o    c    s    n    t    r    w    ret
   lsft x    /    @num @nsy ;    f    g    l     b    q   rsft
   lctl lmet lalt           spc            lsft  rmet  rpt-any
@@ -87,9 +84,9 @@
 
 (deflayer num
   @grl 6    7    8    9    [    ]    0    1    2    3    4    5    bspc
-  tab  lctl @tur @tar @tir    C-down    v    C-up    h    p    rctl   z    =    \
-  @cw  6    3    1    2    7    9    4    0    5    8    z    r
-  lsft ,    /    '    .    f    ;    g    l    b    .   rsft
+  tab  lctl @png @hpy @btp C-down    v    C-up h  p rctl   z    =    \
+  @cw  6    3    1    2    7    9    4    0    5    8    bspc    r
+  lsft x    /    '    .    f    ;    g    l    b    .   rsft
   lctl lmet lalt           ret            bspc  rmet rctl
 )
 
@@ -137,7 +134,7 @@
 
 
 (defchordsv2
-  (d f)    bspc                 15 all-released  (kyudi)
+  (u i)    v                 15 all-released  (kyudi)
 )
 
 
