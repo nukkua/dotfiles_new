@@ -1,5 +1,6 @@
 local lsp = require('lsp-zero')
 
+
 require('mason').setup({})
 require('mason-lspconfig').setup({
     ensure_installed = {
@@ -35,39 +36,30 @@ require('mason-lspconfig').setup({
         'jqls',
         'intelephense',
         'pyright',
+        'vtsls',
     },
     handlers = {
         lsp.default_setup
     }
 })
 
-local lspconfig = require('lspconfig')
-
-lspconfig.pyright.setup({
-    on_attach = on_attach_common,
+vim.lsp.config('clangd', {
+    filetypes = { 'c', 'cpp' },
+    fallbackFlags = { '--std=c++26' }
 })
 
-lspconfig.astro.setup({})
-lspconfig.intelephense.setup {
-    filetypes = { "php", "blade" },
-    settings = {
-        intelephense = {
-            files = {
-                associations = { "*.php", "*.blade.php" },
-            },
-        },
+vim.lsp.config('ts_ls', {
+  init_options = {
+    plugins = { 
+      {
+        name = "@vue/typescript-plugin",
+        location = "/usr/local/lib/node_modules/@vue/language-server",
+        languages = { "vue" },
+      },
     },
-}
-lspconfig.omnisharp.setup({})
-lspconfig.dartls.setup({})
-lspconfig.clangd.setup({
-    init_options = {
-        fallbackFlags = { '--std=c++26' }
-    },
-
+  },
+  filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
 })
-lspconfig.ts_ls.setup({})
-lspconfig.zls.setup {}
-lspconfig.astro.setup({})
 
+vim.lsp.enable({'astro', 'clangd', 'zls', 'vtsls', 'ts_ls'})
 

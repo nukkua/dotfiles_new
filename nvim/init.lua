@@ -67,51 +67,57 @@ package.path = config_path .. "/?/init.lua;" .. package.path
 
 require('packer').startup(function(use)
     use('wbthomason/packer.nvim')
+
+    -- utilidades
     use('tpope/vim-commentary')
-    use('kyazdani42/nvim-web-devicons')
+    use('nvim-tree/nvim-web-devicons')  -- actualizado org
+
     use {
         'nvim-telescope/telescope.nvim',
-        cmd = 'Telescope',
         requires = { 'nvim-lua/plenary.nvim' },
         config = function() require('plugins.telescope') end
     }
-    use("folke/zen-mode.nvim")
+
+    use('folke/zen-mode.nvim')
+
     use {
         'nvim-treesitter/nvim-treesitter',
-        event = { 'BufReadPost', 'BufNewFile' },
         run = ':TSUpdate',
-        config = function() require('plugins.treesiter') end
+        config = function() require('plugins.treesiter') end  -- <== corregido el nombre
+    }
+    use('nvim-treesitter/nvim-treesitter-context')
+
+    use {
+        'nvim-lualine/lualine.nvim',
+        requires = { 'nvim-tree/nvim-web-devicons', opt = true },
+        config = function() require('plugins.lualine') end
     }
 
     use('theprimeagen/harpoon')
-    use('nvim-treesitter/nvim-treesitter-context')
-    use {
-        'nvim-lualine/lualine.nvim',
-        requires = { 'nvim-tree/nvim-web-devicons', opt = true }
-    }
-    
 
+    -- LSP stack (lsp-zero v3)
     use {
         'VonHeikemen/lsp-zero.nvim',
         branch = 'v3.x',
         requires = {
-            { 'williamboman/mason.nvim',           event = 'VeryLazy' },
-            { 'williamboman/mason-lspconfig.nvim', event = 'VeryLazy',  config = function() require('plugins.lsp') end  },
+            { 'williamboman/mason.nvim', config = function() require('mason').setup({}) end },
+            { 'neovim/nvim-lspconfig' },
+            { 'williamboman/mason-lspconfig.nvim',
+            config = function() require('plugins.lsp') end  
+        },
 
-            -- LSP Support
-            { 'neovim/nvim-lspconfig',             event = { 'BufReadPost', 'BufNewFile' } },
-            { 'hrsh7th/cmp-buffer' },
-            { 'hrsh7th/cmp-path' },
-            { 'saadparwaiz1/cmp_luasnip' },
-            -- Autocompletion
-            { 'hrsh7th/nvim-cmp' },
-            { 'hrsh7th/cmp-nvim-lsp' },
-            { 'hrsh7th/cmp-nvim-lua' },
-            -- Snippets
-            { 'L3MON4D3/LuaSnip' },
-            { 'rafamadriz/friendly-snippets' },
-        }
+        -- completion
+        { 'hrsh7th/nvim-cmp' },
+        { 'hrsh7th/cmp-nvim-lsp' },
+        { 'hrsh7th/cmp-buffer' },
+        { 'hrsh7th/cmp-path' },
+        { 'saadparwaiz1/cmp_luasnip' },
+
+        -- snippets
+        { 'L3MON4D3/LuaSnip' },
+        { 'rafamadriz/friendly-snippets' },
     }
+}
 end)
 
 
@@ -120,8 +126,6 @@ end)
 require 'colorsget'
 require 'keymappings'
 require 'plugins.lualine'
-require 'plugins.webdevicons'
-require 'plugins.lsp'
 require 'plugins.harpoon'
 require 'snippets.php'
 require 'snippets.vue'
@@ -131,6 +135,7 @@ require 'snippets.astro'
 
 
 local cmp = require 'cmp'
+local cmp_select = { behavior = cmp.SelectBehavior.Select }
 
 cmp.setup({
     snippet = {
