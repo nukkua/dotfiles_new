@@ -10,7 +10,7 @@ master_width            : 60 # Percentage of screen width
 resize_master_amount    : 1
 resize_stack_amt        : 20
 snap_distance           : 5
-motion_throttle         : 165 # Set to screen refresh rate for smoothest motions
+motion_throttle         : 60 # Set to screen refresh rate for smoothest motions
 should_float            : "pcmanfm"
 new_win_focus           : true
 warp_cursor             : false
@@ -23,9 +23,8 @@ mod_key : alt
 
 #Executables
 
-exec : xrandr --output LVDS1 --off
-exec : asusctl profile -P performance
-exec : feh --bg-fill ~/wallpapers/chainsawman.jpg
+# exec : xrandr --output LVDS1 --off
+exec : feh --bg-fill ~/wallpapers/top/top1.jpg
 exec : xset r rate 250 40
 
 
@@ -38,7 +37,7 @@ exec : picom
 bind : mod + space : "st"
 bind : mod + c : "~/scripts/toogle_touchpad.sh"
 bind : mod + i : "shutdown now"
-bind : mod + y : "~/packages/zen/zen"
+bind : mod + y : "brave"
 bind : mod + d : "discord"
 bind : mod + a : "flameshot gui -c -p ~/Pictures/Screenshots"
 bind : mod + e : "st ~/scripts/coding_session.sh"
@@ -57,7 +56,7 @@ bind : ctrl + down : "amixer -q set Master 5%- unmute"
 
 
 # Window Management:
-call : mod + shift + q : close_window
+call : mod + q : close_window
 call : mod + shift + e : quit
 
 # Focus Movement:
@@ -85,16 +84,17 @@ call : mod + h : master_decrease
 
 # Floating/Fullscreen
 call : mod + shift + space : global_floating
-call : mod + shift + f : fullscreen
+call : mod + f : fullscreen
 
 # Reload Config
 call : mod + x: reload_config
 
 #Some additional configs
 
-open_in_workspace : zen : 1
+# open_in_workspace : zen : 1
+open_in_workspace : brave : 1
 # start_fullscreen	: "st-256color"
-start_fullscreen	: "zen"
+start_fullscreen	: "brave"
 
 # Workspaces (1-9)
 workspace : mod + s          : move 1

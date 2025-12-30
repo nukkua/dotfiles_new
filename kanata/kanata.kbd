@@ -1,0 +1,143 @@
+(defcfg
+  process-unmapped-keys yes
+  concurrent-tap-hold yes
+  rapid-event-delay 2  
+  log-layer-changes no 
+)
+(defsrc
+  grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  caps a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lctl lmet lalt           spc            ralt rmet rctl
+)
+
+(defvar
+  fast-tap-time 150
+  fast-hold-time 140
+  tap-time 180
+  hold-time 170
+  left-hand-keys (
+    q w e r t
+    a s d f g
+    z x c v b
+  )
+  right-hand-keys (
+    y u i o p
+    h j k l ;
+    n m , . /
+  )
+)
+
+(defalias
+  ;; toggle layer aliases
+  lay (layer-toggle layers)
+  kyi (layer-switch kyudi)
+  qwr (layer-switch qwerty)
+  grl (tap-hold-release 200 200 grv @lay)
+
+  num (layer-while-held num)
+  nsy (layer-while-held nsy)
+  mou (layer-while-held mou)
+
+  msu (movemouse-up 1 1)
+  msl (movemouse-left 1 1)
+  msd (movemouse-down 1 1)
+  msr (movemouse-right 1 1)
+  slw (movemouse-speed 200)
+  mwu (mwheel-up 50 120)
+  mwd (mwheel-down 50 120)
+
+  cw (caps-word 2000)
+  hpy (macro s u d o spc p a c m a n spc - S-s y u spc - - n o c o n f i r m ret)
+  png (macro f a s t f e t c h ret)
+
+  btp (macro b t o p ret)
+  tar (macro - S-.)
+  tur (macro S-; S-;)
+  tir (macro = S-.)
+  txs (macro C-Space 50 s)
+  txn (macro C-Space 50 n)
+  txt (macro C-Space 50 t)
+  txr (macro C-Space 50 r)
+
+
+)
+
+
+(deflayer nomods
+  @grl 6    7    8    9    [    ]    0    1    2    3    4    5    bspc
+  tab  k    y    u    ,    -    v    m    h    p    j    v    =    \
+  lctl d    i    e    a    o    c    s    n    t    r    w    ret
+  lsft x    /    @num @nsy ;    f    g    l     b    q   rsft
+  lctl lmet lalt           spc            lsft  rmet  rpt-any
+)
+
+
+
+
+(deflayer kyudi
+  @grl 6    7    8    9    [    ]    0    1    2    3    4    5    bspc
+  tab  k    y    u    ,    -    v    m    h    p    j    z    =    \
+  lctl d    i    e    a    o    c    s    n    t    r    w    ret
+  lsft x    /    @num @nsy ;    f    g    l     b    q   rsft
+  lctl lmet lalt           spc            lsft  rmet  rpt-any 
+)
+
+
+(deflayer num
+  @grl 6    7    8    9    [    ]    0    1    2    3    4    5    bspc
+  tab  lctl @tur @tar @tir    C-down    v    C-up    h    p    rctl   z    =    \
+  @cw  6    3    1    2    7    9    4    0    5    8    z    r
+  lsft ,    /    '    .    f    ;    g    l    b    .   rsft
+  lctl lmet lalt           ret            bspc  rmet rctl
+)
+
+
+
+
+(deflayer qwerty
+  @grl 1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  caps a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lctl lmet lalt           spc            lsft rmet rctl
+)
+
+
+
+(deflayer nsy
+  @grl 6    7    8    9    [    ]    0    1    2    3    4    5    bspc
+  tab S-1   /  S-,  S-.   S-=    '   [     ]    S-grv  grv  \    =    \
+  S-5 S-6  S-'     S-]    S-4   S-7    S-3    S-9    S-0    ;    '  grv  ret
+  lsft '   '     '    '     ;      S-2    S-8    S-\    S-;    .    rsft
+  lctl lmet  bspc           @mou           S-[  rmet rctl
+)
+
+(deflayer mou
+  @grl 6    7    8    9    [    ]    0    1    2    3    4    5    bspc
+  tab  up   down  left  rght   S-9    S-0    @mwu    @msu    @mwd  grv    S-grv    =    \
+  lctl  C-[  C-S-tab  C-tab  C-]   @slw      ]    @msl    @msd    @msr    mltp    mrtp    ret 
+  lsft S-\    \  '  S-{   ;     S-}   @txs   @txn    @txt    @txr    rsft
+  lctl lmet  bspc           ret           lsft  rmet rctl
+)
+
+
+
+
+
+(deflayer layers
+  _    @qwr @kyi lrld _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _              _              _    _    _
+)
+
+
+
+(defchordsv2
+  (d f)    bspc                 15 all-released  (kyudi)
+)
+
+

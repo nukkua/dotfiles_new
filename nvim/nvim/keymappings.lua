@@ -4,6 +4,8 @@ vim.opt.clipboard:append("unnamedplus")
 vim.opt.splitright = true
 vim.opt.splitbelow = true
 
+vim.keymap.set('i', '<C-c>', '<Esc>', { noremap = true })
+vim.keymap.set('n', '<C-c>', '<Esc>', { noremap = true })
 vim.keymap.set("n", "n", "nzzzv")
 vim.keymap.set("n", "N", "Nzzzv")
 -- New ctrl d and ctrl u
@@ -11,21 +13,22 @@ vim.keymap.set("n", "<C-d>", "<C-d>zz")
 vim.keymap.set("n", "<C-u>", "<C-u>zz")
 
 vim.g.mapleader = " "
+vim.keymap.set('n', '<leader>s', ':e #<CR>')
 
-vim.keymap.set("n", "<leader>sv", "<C-w>v", { desc = "Split window vertically" })      -- split window vertically
-vim.keymap.set("n", "<leader>sh", "<C-w>s", { desc = "Split window horizontally" })    -- split window horizontally
-vim.keymap.set("n", "<leader>se", "<C-w>=", { desc = "Make splits equal size" })       -- make split windows equal width & height
-vim.keymap.set("n", "<leader>sx", "<cmd>close<CR>", { desc = "Close current split" })  -- close current split window
+-- vim.keymap.set("n", "<leader>sv", "<C-w>v", { desc = "Split window vertically" })      -- split window vertically
+-- vim.keymap.set("n", "<leader>sh", "<C-w>s", { desc = "Split window horizontally" })    -- split window horizontally
+-- vim.keymap.set("n", "<leader>se", "<C-w>=", { desc = "Make splits equal size" })       -- make split windows equal width & height
+-- vim.keymap.set("n", "<leader>sx", "<cmd>close<CR>", { desc = "Close current split" })  -- close current split window
 
-vim.keymap.set("n", "<leader>to", "<cmd>tabnew<CR>", { desc = "Open new tab" })        -- open new tab
-vim.keymap.set("n", "<leader>tx", "<cmd>tabclose<CR>", { desc = "Close current tab" }) -- close current tab
+-- vim.keymap.set("n", "<leader>to", "<cmd>tabnew<CR>", { desc = "Open new tab" })        -- open new tab
+-- vim.keymap.set("n", "<leader>tx", "<cmd>tabclose<CR>", { desc = "Close current tab" }) -- close current tab
 -- vim.keymap.set("n", "<leader>tn", "<cmd>tabn<CR>", { desc = "Go to next tab" })                     --  go to next tab
 -- vim.keymap.set("n", "<leader>tp", "<cmd>tabp<CR>", { desc = "Go to previous tab" })                 --  go to previous tab
 vim.keymap.set("n", "<leader>tn", "<C-w>j", { desc = "Go to next tab" })                            --  go to next tab
-vim.keymap.set("n", "<leader>ts", "<C-w>k", { desc = "Go to previous tab" })                        --  go to previous tab
+vim.keymap.set("n", "<leader>tp", "<C-w>k", { desc = "Go to previous tab" })                        --  go to previous tab
 vim.keymap.set("n", "<leader>tf", "<cmd>tabnew %<CR>", { desc = "Open current buffer in new tab" }) --  move current buffer to new tab
 
-vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
+vim.keymap.set("n", "<leader>e", vim.cmd.Ex)
 
 vim.keymap.set("x", "<leader>p", [["_dP]], { desc = "Open current buffer in new tab" }) --  move current buffer to new tab
 
@@ -36,36 +39,35 @@ vim.api.nvim_set_keymap('n', '<Space>w', ':w<CR>', { noremap = true, silent = tr
 
 vim.api.nvim_set_keymap('n', '<Space>q', ':q<CR>', { noremap = true, silent = true })
 
--- vim.api.nvim_set_keymap('n', '<Space>e', ':Neoformat<CR>', { noremap = true, silent = true })
-
--- vim.api.nvim_set_keymap('n', '<Space>f', ':Files<CR>', { noremap = true, silent = true })
-
--- vim.api.nvim_set_keymap('n', '<Space>g', ':Ag<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<Space>y', '"+y', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', '<Space>y', '"+y', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('x', '<Space>y', '"+y', { noremap = true, silent = true })
 
 
-vim.api.nvim_set_keymap('n', '<Space>f', ":lua require('telescope.builtin').find_files()<CR>",
+
+vim.api.nvim_set_keymap('n', '<Space>f', "<CMD>Telescope find_files<CR>",
     { noremap = true, silent = true })
 
 -- Buscar texto en el proyecto
-vim.api.nvim_set_keymap('n', '<Space>g', ":lua require('telescope.builtin').live_grep()<CR>",
+vim.api.nvim_set_keymap('n', '<Space>g', "<CMD>Telescope live_grep<CR>",
     { noremap = true, silent = true })
 
 -- Cambiar entre buffers abiertos
-vim.api.nvim_set_keymap('n', '<Space>b', ":lua require('telescope.builtin').buffers()<CR>",
+vim.api.nvim_set_keymap('n', '<Space>b', "<CMD>Telescope buffers<CR>",
     { noremap = true, silent = true })
 
 -- Buscar en la ayuda de Neovim
-vim.api.nvim_set_keymap('n', '<Space>h', ":lua require('telescope.builtin').help_tags()<CR>",
+vim.api.nvim_set_keymap('n', '<Space>h', "<CMD>Telescope help_tags<CR>",
     { noremap = true, silent = true })
 
 -- Buscar comandos recientes
-vim.api.nvim_set_keymap('n', '<Space>r', ":lua require('telescope.builtin').command_history()<CR>",
+vim.api.nvim_set_keymap('n', '<Space>r', "<CMD>Telescope command_history<CR>",
     { noremap = true, silent = true })
 
-vim.api.nvim_set_keymap('n', '<Space>o', ":lua require('telescope.builtin').oldfiles()<CR>",
+vim.api.nvim_set_keymap('n', '<Space>o', "<CMD>Telescope oldfiles<CR>",
     { noremap = true, silent = true })
 
-vim.api.nvim_set_keymap('n', '<Space>i', ":lua require('telescope.builtin').git_branches()<CR>",
+vim.api.nvim_set_keymap('n', '<Space>i', "<CMD>Telescope git_branches<CR>",
     { noremap = true, silent = true })
 
 -- commentary
@@ -75,18 +77,6 @@ vim.api.nvim_set_keymap('v', '<Space>/', ':Commentary<CR>', { noremap = true, si
 
 local options = { noremap = true, silent = true }
 
-
--- Mover líneas en modo normal
-vim.api.nvim_set_keymap('n', '<C-j>', ':m .+1<CR>==', options)
-vim.api.nvim_set_keymap('n', '<C-k>', ':m .-2<CR>==', options)
-
--- Mover líneas en modo insertar
-vim.api.nvim_set_keymap('i', '<C-j>', '<Esc>:m .+1<CR>==gi', options)
-vim.api.nvim_set_keymap('i', '<C-k>', '<Esc>:m .-2<CR>==gi', options)
-
--- Mover líneas en modo visual
-vim.api.nvim_set_keymap('v', '<C-j>', ':m \'>+1<CR>gv=gv', options)
-vim.api.nvim_set_keymap('v', '<C-k>', ':m \'<-2<CR>gv=gv', options)
 
 -- harpoon
 
@@ -124,7 +114,7 @@ vim.opt.smartindent = false
 
 
 -- More info about diagnostic
-vim.keymap.set('n', '<leader>pe', vim.diagnostic.open_float, { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>d', vim.diagnostic.open_float, { noremap = true, silent = true })
 
 -- highlight line
 vim.opt.cursorline = false
@@ -182,4 +172,4 @@ local function format_with_black()
     })
 end
 
-vim.keymap.set('n', '<leader>j', format_with_black, { desc = "Formatear Python con black manual" })
+vim.keymap.set('n', '<leader>bl', format_with_black, { desc = "Formatear Python con black manual" })
