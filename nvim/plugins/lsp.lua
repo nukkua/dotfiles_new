@@ -1,5 +1,14 @@
 local lsp = require('lsp-zero')
 
+local lsp_on_attach = function(_, bufnr)
+    local opts = { buffer = bufnr, remap = false }
+    vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+    vim.keymap.set("n", "<leader>la", vim.lsp.buf.code_action, opts)
+    vim.keymap.set("n", "(d", vim.diagnostic.goto_next, opts)
+    vim.keymap.set("n", ")d", vim.diagnostic.goto_prev, opts)
+    vim.keymap.set('n', '<leader>le', function() vim.lsp.buf.format({ async = true }) end, opts)
+end
+_G.__nukkua_on_attach = lsp_on_attach
 
 require('mason').setup({})
 require('mason-lspconfig').setup({

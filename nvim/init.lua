@@ -1,56 +1,21 @@
--- GENERAL
-vim.opt.termguicolors = true
+-- Themes
+vim.cmd.colorscheme("quiet")
+vim.opt.background = 'dark'
 
-
-vim.o.shada = [[!,'20,<50,s10,h]]
-
-vim.loader.enable() -- cache de módulos nativo
-vim.g.loaded_python3_provider = 0
-vim.g.loaded_ruby_provider    = 0
-vim.g.loaded_perl_provider    = 0
-vim.g.loaded_node_provider    = 0
-
-vim.g.zig_executable          = "/home/leverna/zig/"
-vim.cmd("hi StatusLine guibg=none")
+-- Config
 vim.opt.mouse = ""
 vim.wo.signcolumn = 'no'
 vim.opt.guicursor = "n-v-sm:block"
 vim.g.netrw_banner = 0
 vim.g.netrw_winsize = 25
+vim.o.shada = [[!,'20,<50,s10,h]]
+vim.opt.termguicolors = true
+vim.opt.iskeyword:remove("-")
 
-vim.cmd [[set background=dark]]
-vim.cmd [[ hi Normal guibg=NONE ctermbg=NONE ]]
-vim.cmd [[ hi NormalNC guibg=NONE ctermbg=NONE ]]
-vim.cmd [[ hi VertSplit guibg=NONE ctermbg=NONE ]]
-vim.cmd [[ hi EndOfBuffer guibg=NONE ctermbg=NONE ]]
+-- Zig
+vim.g.zig_executable          = "/home/leverna/zig/"
 
-vim.cmd [[highlight NvimTreeFolderIcon guifg=#FFC0CB]]
-vim.cmd [[highlight NvimTreeFolderName guifg=#FFC0CB]]
-vim.cmd [[highlight NvimTreeIndentMarker guifg=#FFC0CB]]
-vim.cmd [[highlight NvimTreeFileRenamed guifg=#FFC0CB]]
-vim.cmd [[highlight NvimTreeFileName guifg=#FFC0CB]]
-vim.cmd [[highlight NvimTreeImageFile guifg=#FFC0CB]]
-vim.cmd [[highlight NvimTreeSpecialFile guifg=#FFC0CB]]
-
-vim.cmd('highlight NvimTreeNormal guibg=NONE')
-vim.cmd('highlight NvimTreeNormalNC guibg=NONE')
-
-
--- LSP BASIC
-local lsp_on_attach = function(_, bufnr)
-    local opts = { buffer = bufnr, remap = false }
-    vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-    vim.keymap.set("n", "<leader>la", vim.lsp.buf.code_action, opts)
-    vim.keymap.set("n", "(d", vim.diagnostic.goto_next, opts)
-    vim.keymap.set("n", ")d", vim.diagnostic.goto_prev, opts)
-    vim.keymap.set('n', '<leader>le', function() vim.lsp.buf.format({ async = true }) end, opts)
-end
-_G.__nukkua_on_attach = lsp_on_attach
-
-
-
--- PACKER
-
+-- Packer
 local install_path = vim.fn.stdpath('data') .. '/site/pack/packer/start/packer.nvim'
 if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
     vim.cmd('!git clone https://github.com/wbthomason/packer.nvim ' .. install_path)
@@ -62,40 +27,33 @@ package.path = config_path .. "/?.lua;" .. package.path
 package.path = config_path .. "/?/init.lua;" .. package.path
 
 
-
-
-
+-- Plugins
 require('packer').startup(function(use)
     use('wbthomason/packer.nvim')
-
-    -- utilidades
+    use('j-hui/fidget.nvim')
+    use 'AndrewRadev/tagalong.vim'
+    use '0x100101/lab.nvim'
+    use('tpope/vim-fugitive')
     use('tpope/vim-commentary')
-    use('nvim-tree/nvim-web-devicons')  -- actualizado org
-
+    use ('stevearc/oil.nvim')
+    use('nvim-tree/nvim-web-devicons')
+    use "lifepillar/vim-solarized8"
     use {
         'nvim-telescope/telescope.nvim',
         requires = { 'nvim-lua/plenary.nvim' },
         config = function() require('plugins.telescope') end
     }
-
-    use('folke/zen-mode.nvim')
-
     use {
-        'nvim-treesitter/nvim-treesitter',
-        run = ':TSUpdate',
-        config = function() require('plugins.treesiter') end  -- <== corregido el nombre
+        'xeluxee/competitest.nvim',
+        requires = 'MunifTanjim/nui.nvim',
+        config = function() require('competitest').setup() end
     }
-    use('nvim-treesitter/nvim-treesitter-context')
-
+    use('folke/zen-mode.nvim')
     use {
         'nvim-lualine/lualine.nvim',
         requires = { 'nvim-tree/nvim-web-devicons', opt = true },
-        config = function() require('plugins.lualine') end
     }
-
     use('theprimeagen/harpoon')
-
-    -- LSP stack (lsp-zero v3)
     use {
         'VonHeikemen/lsp-zero.nvim',
         branch = 'v3.x',
@@ -103,59 +61,91 @@ require('packer').startup(function(use)
             { 'williamboman/mason.nvim', config = function() require('mason').setup({}) end },
             { 'neovim/nvim-lspconfig' },
             { 'williamboman/mason-lspconfig.nvim',
-            config = function() require('plugins.lsp') end  
+            config = function() require('plugins.lsp') end
         },
-
-        -- completion
         { 'hrsh7th/nvim-cmp' },
         { 'hrsh7th/cmp-nvim-lsp' },
         { 'hrsh7th/cmp-buffer' },
         { 'hrsh7th/cmp-path' },
         { 'saadparwaiz1/cmp_luasnip' },
-
-        -- snippets
         { 'L3MON4D3/LuaSnip' },
         { 'rafamadriz/friendly-snippets' },
     }
 }
 end)
 
-
-
-
-require 'colorsget'
+-- requires
 require 'keymappings'
-require 'plugins.lualine'
 require 'plugins.harpoon'
-require 'snippets.php'
-require 'snippets.vue'
-require 'snippets.react'
-require 'snippets.astro'
+require 'plugins.cmp'
+require 'plugins.competitest'
 
-
-
-local cmp = require 'cmp'
-local cmp_select = { behavior = cmp.SelectBehavior.Select }
-
-cmp.setup({
-    snippet = {
-        expand = function(args)
-            require 'luasnip'.lsp_expand(args.body)
-        end,
+require("oil").setup({
+    view_options = {
+        show_hidden = true,
+        natural_order = "fast",
     },
-    mapping = cmp.mapping.preset.insert({
-        ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-        ['<C-f>'] = cmp.mapping.scroll_docs(4),
-        ['<C-Space>'] = cmp.mapping.complete(),
-        ['<C-a>'] = cmp.mapping.abort(),
-        ['<C-s>'] = cmp.mapping.confirm({ select = true }),
-        ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
-        ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
-    }),
-    sources = cmp.config.sources({
-        { name = 'nvim_lsp' },
-        { name = 'luasnip' },
-        { name = 'buffer' },
-        { name = 'path' }
-    })
+    columns = {},
+    delete_to_trash = false,
+    skip_confirm_for_simple_edits = true,
+    prompt_save_on_select_new_entry = false,
+    default_file_explorer = true,
+    cleanup_delay_ms = 1000,
+    watch_for_changes = true,
+    confirmation = {
+        max_width = 0.4,
+        max_height = 0.2,
+        border = "rounded",
+        win_options = {
+            winblend = 0,
+        },
+    },
 })
+
+require("fidget").setup {
+    notification = {
+        window = {
+            winblend = 0,
+            normal_hl = "NormalFloat",
+        }
+    }
+}
+vim.g.tagalong_filetypes = {
+    'html',
+    'xml',
+    'javascriptreact',
+    'typescriptreact',
+    'astro',
+    'vue',
+}
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "astro",
+    callback = function()
+        vim.opt_local.iskeyword:remove("-")
+    end,
+})
+
+vim.keymap.set("n", "<leader>d", function()
+    local word = vim.fn.expand("<cword>")
+    local ft = vim.bo.filetype
+
+    local templates = {
+        javascript = "console.log('%s:', %s);",
+        typescript = "console.log('%s:', %s);",
+        astro = "console.log('%s:', %s);",
+        python = "print('%s:', %s)",
+        lua = "print('%s:', %s)",
+        rust = "println!(\"%s: {:?}\", %s);",
+    }
+
+    local template = templates[ft]
+    if template then
+        local line = string.format(template, word, word)
+        vim.api.nvim_put({ line }, "l", true, true)
+    else
+        print("No template for filetype: " .. ft)
+    end
+end)
+
+
