@@ -67,9 +67,9 @@
 
 (deflayer nomods
   @grl 6    7    8    9    [    ]    0    1    2    3    4    5    bspc
-  tab  k    y    u    ,    -    v    m    h    p    j    v    =    \
+  tab  k    y    u    ,    -    rpt-any    m    h    p    j    v    =    \
   lctl d    i    e    a    o    c    s    n    t    r    w    ret
-  lsft x    /    @num @nsy ;    f    g    l     b    q   rsft
+  @grl x    /    @num @nsy ;    f    g    l     b    q   rsft
   lctl lmet lalt           spc            lsft  rmet  rpt-any
 )
 
@@ -78,19 +78,19 @@
 
 (deflayer kyudi
   @grl 6    7    8    9    [    ]    0    1    2    3    4    5    bspc
-  tab  k    y    u    ,    -    v    m    h    p    j    z    =    \
+  tab  k    y    u    ,    -    rpt-any    m    h    p    j    v    =    \
   lctl d    i    e    a    o    c    s    n    t    r    w    ret
-  lsft x    /    @num @nsy ;    f    g    l     b    q   rsft
+  @grl x    /    @num @nsy ;    f    g    l     b    q   rsft
   lctl lmet lalt           spc            lsft  rmet  rpt-any 
 )
 
 
 (deflayer num
   @grl 6    7    8    9    [    ]    0    1    2    3    4    5    bspc
-  tab  lctl @tur @tar @tir    C-down    v    C-up    h    p    rctl   z    =    \
+  tab  lctl @tur @tar @tir      down    bspc      up    h    p    rctl   z    =    \
   @cw  6    3    1    2    7    9    4    0    5    8    z    r
   lsft ,    /    '    .    f    ;    g    l    b    .   rsft
-  lctl lmet lalt           ret            bspc  rmet rctl
+  lctl lmet lalt           @mou            bspc  rmet rctl
 )
 
 
@@ -100,7 +100,7 @@
   @grl 1    2    3    4    5    6    7    8    9    0    -    =    bspc
   tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
   caps a    s    d    f    g    h    j    k    l    ;    '    ret
-  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lsft z    x    c    v    b    n    m    @grl    .    /    rsft
   lctl lmet lalt           spc            lsft rmet rctl
 )
 
@@ -108,10 +108,10 @@
 
 (deflayer nsy
   @grl 6    7    8    9    [    ]    0    1    2    3    4    5    bspc
-  tab S-1   /  S-,  S-.   S-=    '   [     ]    S-grv  grv  \    =    \
-  S-5 S-6  S-'     S-[    S-]   S-7    S-3    S-9    S-0    ;    '  grv  ret
-  lsft '   '     '    '     ;      S-2    S-8    S-\    S-;    .    rsft
-  lctl lmet  bspc           @mou           S-4  rmet rctl
+  tab S-1   /  S-,  S-.   S-=    rpt-any   [     ]    S-grv  grv  \    =    \
+  S-5 S-6  S-'     S-\    S-4   S-7    S-3    S-9    S-0    ;    '  grv  ret
+  lsft '   '     '    '     ;      S-2    S-[    S-]    S-;    .    rsft
+  lctl lmet  bspc           ret           S-8  rmet rctl
 )
 
 (deflayer mou
@@ -137,7 +137,9 @@
 
 
 (defchordsv2
-  (d f)    bspc                 15 all-released  (kyudi)
+  (d f)    (macro u e)                 15 first-release  (nomods)
+  (j k)    z                 15 first-release  (nomods)
+  (a s)    (macro r e t u r n)             10 first-release  (nomods)
 )
 
 
