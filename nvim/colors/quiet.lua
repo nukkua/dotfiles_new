@@ -7,6 +7,7 @@ if vim.fn.exists("syntax_on") == 1 then
 end
 vim.g.colors_name = "quiet"
 
+
 local set = vim.api.nvim_set_hl
 
 set(0, "Normal", { fg = "#dddddd", bg = "NONE" })
@@ -27,7 +28,7 @@ set(0, "FloatBorder", { fg = "#555555", bg = "NONE" })
 set(0, "@keyword", { bold = true })
 set(0, "@keyword.function", { bold = true })
 set(0, "@keyword.operator", { bold = true })
--- zig
+
 set(0, "@lsp.type.keyword", { fg = "#dddddd" })
 set(0, "@lsp.type.keyword.zig", { fg = "#dddddd" })
 set(0, "@lsp.type.keyword.zig.return", { fg = "#dddddd" })

@@ -24,6 +24,10 @@
       "rev": "b42c06ca308906f07912ba9aff015ac2c0831f85",
       "src": "https://github.com/xeluxee/competitest.nvim"
     },
+    "fff.nvim": {
+      "rev": "2606dce6bc0514b3addf46d6726c868f6752180f",
+      "src": "https://github.com/dmtrKovalenko/fff.nvim"
+    },
     "fidget.nvim": {
       "rev": "889e2e96edef4e144965571d46f7a77bcc4d0ddf",
       "src": "https://github.com/j-hui/fidget.nvim"
@@ -39,10 +43,6 @@
     "lsp-zero.nvim": {
       "rev": "d388e2b71834c826e61a3eba48caec53d7602510",
       "src": "https://github.com/VonHeikemen/lsp-zero.nvim"
-    },
-    "lualine.nvim": {
-      "rev": "f5d2a8570f8b736ddb9bb4be504355bcd6e15ec8",
-      "src": "https://github.com/nvim-lualine/lualine.nvim"
     },
     "mason-lspconfig.nvim": {
       "rev": "0a3b42c3e503df87aef6d6513e13148381495c3a",
