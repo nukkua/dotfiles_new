@@ -1,0 +1,19 @@
+[user]
+	email = marco.salazar.2014.com@gmail.com
+	name = nukkua
+[diff]
+	tool = nvimdiff
+[difftool]
+	prompt = false
+[difftool "nvimdiff"]
+	cmd = nvim -d \"$LOCAL\" \"$REMOTE\"
+[merge]
+	tool = nvimdiff
+[mergetool]
+	prompt = false
+	keepBackup = false
+[mergetool "vimdiff"]
+	layout = LOCAL,BASE,REMOTE / MERGED
+[mergetool "nvimdiff"]
+	layout = LOCAL,BASE,REMOTE / MERGED
+	cmd = nvim -d \"$LOCAL\" \"$BASE\" \"$REMOTE\" \"$MERGED\" +\"4wincmd w\" +\"wincmd J\"

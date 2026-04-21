@@ -473,3 +473,33 @@ cmp.setup({
 
 require("luasnip").setup({ enable_autosnippets = true })
 require("luasnip.loaders.from_lua").load({ paths = "~/.config/nvim/snippets/" })
+
+vim.api.nvim_create_autocmd("BufWritePost", {
+  pattern = "*.md",
+  callback = function()
+    local file = vim.fn.expand("%:p")
+    local pdf = vim.fn.expand("%:p:r") .. ".pdf"
+
+    vim.fn.jobstart({ "pandoc", file, "-o", pdf }, { detach = true })
+  end,
+})
+
+vim.keymap.set("n", "<leader>mp", function()
+  local pdf = vim.fn.expand("%:p:r") .. ".pdf"
+  vim.fn.jobstart({ "zathura", pdf }, { detach = true })
+end, { desc = "Open Markdown PDF in Zathura" })
+
+
+vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter", "VimEnter" }, {
+  callback = function()
+    if vim.w.git_conflict_matches then
+      return
+    end
+
+    vim.w.git_conflict_matches = {
+      vim.fn.matchadd("ConflictMarker", [[^<<<<<<< .*$]]),
+      vim.fn.matchadd("ConflictMarker", [[^=======$]]),
+      vim.fn.matchadd("ConflictMarker", [[^>>>>>>> .*$]]),
+    }
+  end,
+})

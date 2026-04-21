@@ -47,6 +47,7 @@ set(0, "PmenuSbar", { bg = "NONE" })
 set(0, "PmenuThumb", { bg = "#555555" })
 
 set(0, "Search",    { fg = "#d8d8d8", bg = "NONE", underline = true })
+set(0, "ConflictMarker", { fg = "#d8d8d8", bg = "NONE", reverse = true })
 set(0, "IncSearch", { fg = "#d8d8d8", bg = "NONE", reverse = true })
 set(0, "CurSearch", { fg = "#d8d8d8", bg = "NONE", reverse = true })
 set(0, "TelescopeResultsNormal", { fg = "#a8a8a8", bg = "NONE" })
