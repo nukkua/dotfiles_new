@@ -273,6 +273,14 @@ vim.api.nvim_set_keymap('n', '<Space>r', ":edit!<CR>", { noremap = true, silent 
 vim.api.nvim_set_keymap('n', '<Space>cc', ':Commentary<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<Space>cc', ':Commentary<CR>', { noremap = true, silent = true })
 
+vim.keymap.set('n','n','nzz',{silent=true})
+vim.keymap.set('n','N','Nzz',{silent=true})
+vim.keymap.set('n','*','*zz',{silent=true})
+vim.keymap.set('n','#','#zz',{silent=true})
+vim.keymap.set('n','g*','g*zz',{silent=true})
+vim.keymap.set('n','g#','g#zz',{silent=true})
+vim.cmd([[cnoremap <CR> <CR><C-c>zz]])
+
 vim.keymap.set("n", ",,", ':lua require("harpoon.mark").add_file()<CR>')
 vim.keymap.set("n", ",e", ':lua require("harpoon.ui").toggle_quick_menu()<CR>')
 vim.keymap.set("n", ",s", ':lua require("harpoon.ui").nav_file(1)<CR>')
@@ -503,3 +511,5 @@ vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter", "VimEnter" }, {
     }
   end,
 })
+
+require("intro");
