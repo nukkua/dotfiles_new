@@ -24,25 +24,22 @@ mod_key : alt
 #Executables
 
 # exec : xrandr --output LVDS1 --off
-exec : feh --bg-fill ~/wallpapers/top/top1.jpg
+exec : feh --bg-fill ~/wallpapers/goat_extended.jpg
 exec : xset r rate 250 40
-
-
-
 exec : picom 
- 
+exec : firefox
+exec : "st -e ~/scripts/auto_start.sh"
 
-
-# Application Launchers:
 bind : mod + space : "st"
-bind : mod + c : "~/scripts/toogle_touchpad.sh"
-bind : mod + i : "shutdown now"
-bind : mod + y : "brave"
-bind : mod + d : "discord"
-bind : mod + a : "flameshot gui -c -p ~/Pictures/Screenshots"
-bind : mod + e : "st ~/scripts/coding_session.sh"
-bind : mod + o : "st ~/projects/main"
-bind : mod + z : "vmware"
+bind : mod + u : "shutdown now"
+bind : mod + y : "firefox"
+bind : mod + d : "equicord"
+bind : mod + o : "sh -c 'flameshot gui -r -p ~/Pictures/Screenshots | xclip -selection clipboard -t image/png'"
+
+bind : mod + a : "st -e ~/scripts/personal.sh"
+bind : mod + e : "st -e ~/scripts/work.sh"
+bind : mod + i : "st -e ~/scripts/pdf_searcher.sh" 
+bind : mod + p : "kopuz"
 
 
 bind : mod + minus : "brightnessctl set 10%-"
@@ -89,12 +86,7 @@ call : mod + f : fullscreen
 # Reload Config
 call : mod + x: reload_config
 
-#Some additional configs
-
-# open_in_workspace : zen : 1
-open_in_workspace : brave : 1
-# start_fullscreen	: "st-256color"
-start_fullscreen	: "brave"
+open_in_workspace : firefox : 1
 
 # Workspaces (1-9)
 workspace : mod + s          : move 1

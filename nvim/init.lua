@@ -6,6 +6,9 @@ vim.opt.background = 'dark'
 require('vim._core.ui2').enable({})
 
 -- Config
+vim.opt.lazyredraw = true
+vim.opt.synmaxcol = 200
+
 vim.loader.enable()
 vim.opt.mouse         = ""
 vim.wo.signcolumn     = 'no'
@@ -23,24 +26,21 @@ vim.pack.add({
     { src = "https://github.com/j-hui/fidget.nvim" },
     { src = "https://github.com/AndrewRadev/tagalong.vim" },
     { src = "https://github.com/stevearc/oil.nvim" },
+    { src = "https://github.com/ThePrimeagen/harpoon", version = "harpoon2" },
     { src = "https://github.com/nvim-lua/plenary.nvim" },
     { src = "https://github.com/xeluxee/competitest.nvim" },
     { src = "https://github.com/MunifTanjim/nui.nvim" },
-    { src = "https://github.com/ThePrimeagen/harpoon" },
     { src = "https://github.com/neovim/nvim-lspconfig" },
     { src = "https://github.com/nvim-treesitter/nvim-treesitter",            version = "main" },
     { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects" },
     { src = "https://github.com/mason-org/mason.nvim" },
     { src = "https://github.com/mason-org/mason-lspconfig.nvim" },
-    { src = "https://github.com/hrsh7th/nvim-cmp" },
-    { src = "https://github.com/hrsh7th/cmp-nvim-lsp" },
-    { src = "https://github.com/hrsh7th/cmp-buffer" },
-    { src = "https://github.com/hrsh7th/cmp-path" },
-    { src = "https://github.com/saadparwaiz1/cmp_luasnip" },
     { src = "https://github.com/L3MON4D3/LuaSnip" },
+    { src = "https://github.com/Saghen/blink.cmp",                           version = vim.version.range("*") },
     { src = "https://github.com/tpope/vim-commentary" },
     { src = "https://github.com/dmtrKovalenko/fff.nvim" },
 })
+
 
 vim.api.nvim_create_autocmd('PackChanged', {
     callback = function(ev)
@@ -53,6 +53,7 @@ vim.api.nvim_create_autocmd('PackChanged', {
         end
     end,
 })
+
 
 vim.g.fff = {
     title = 'fff',
@@ -111,20 +112,8 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
-
-require("harpoon").setup({
-    global_settings = {
-        save_on_toggle = false,
-        save_on_change = true,
-        enter_on_sendcmd = false,
-        tmux_autoclose_windows = false,
-        excluded_filetypes = { "harpoon" },
-        mark_branch = false,
-        tabline = false,
-        tabline_prefix = "   ",
-        tabline_suffix = "   ",
-    }
-})
+local harpoon = require("harpoon")
+harpoon:setup()
 
 require("oil").setup({
     view_options = {
@@ -251,14 +240,14 @@ vim.keymap.set(
 vim.keymap.set(
     'n',
     '<Space>ba',
-    function() require('fff').find_files({ query = 'git:modified'}) end,
+    function() require('fff').find_files({ query = 'git:modified' }) end,
     { desc = 'Git status' }
 )
 
 vim.keymap.set(
     'n',
     '<Space>be',
-    function() require('fff').find_files({ query = 'git:staged'}) end,
+    function() require('fff').find_files({ query = 'git:staged' }) end,
     { desc = 'Git status' }
 )
 
@@ -267,27 +256,29 @@ vim.api.nvim_set_keymap('n', '<Space>j', "<CMD>noh<CR>", { noremap = true, silen
 vim.keymap.set('n', '<Space>u', function()
     vim.cmd.packadd("nvim.undotree")
     require("undotree").open()
-end, {desc = "Toggle builtin undotree"})
+end, { desc = "Toggle builtin undotree" })
 
 vim.api.nvim_set_keymap('n', '<Space>r', ":edit!<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<Space>cc', ':Commentary<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<Space>cc', ':Commentary<CR>', { noremap = true, silent = true })
 
-vim.keymap.set('n','n','nzz',{silent=true})
-vim.keymap.set('n','N','Nzz',{silent=true})
-vim.keymap.set('n','*','*zz',{silent=true})
-vim.keymap.set('n','#','#zz',{silent=true})
-vim.keymap.set('n','g*','g*zz',{silent=true})
-vim.keymap.set('n','g#','g#zz',{silent=true})
+vim.keymap.set('n', 'n', 'nzz', { silent = true })
+vim.keymap.set('n', 'N', 'Nzz', { silent = true })
+vim.keymap.set('n', '*', '*zz', { silent = true })
+vim.keymap.set('n', '#', '#zz', { silent = true })
+vim.keymap.set('n', 'g*', 'g*zz', { silent = true })
+vim.keymap.set('n', 'g#', 'g#zz', { silent = true })
 vim.cmd([[cnoremap <CR> <CR><C-c>zz]])
 
-vim.keymap.set("n", ",,", ':lua require("harpoon.mark").add_file()<CR>')
-vim.keymap.set("n", ",e", ':lua require("harpoon.ui").toggle_quick_menu()<CR>')
-vim.keymap.set("n", ",s", ':lua require("harpoon.ui").nav_file(1)<CR>')
-vim.keymap.set("n", ",n", ':lua require("harpoon.ui").nav_file(2)<CR>')
-vim.keymap.set("n", ",t", ':lua require("harpoon.ui").nav_file(3)<CR>')
-vim.keymap.set("n", ",r", ':lua require("harpoon.ui").nav_file(4)<CR>')
-vim.keymap.set("n", ",w", ':lua require("harpoon.ui").nav_file(5)<CR>')
+vim.keymap.set("n", ",,", function() harpoon:list():add() end)
+vim.keymap.set("n", ",e", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end)
+vim.keymap.set("n", ",s", function() harpoon:list():select(1) end)
+vim.keymap.set("n", ",n", function() harpoon:list():select(2) end)
+vim.keymap.set("n", ",t", function() harpoon:list():select(3) end)
+vim.keymap.set("n", ",r", function() harpoon:list():select(4) end)
+vim.keymap.set("n", ",w", function() harpoon:list():select(5) end)
+vim.keymap.set("n", ",m", function() harpoon:list():prev() end)
+vim.keymap.set("n", ",h", function() harpoon:list():next() end)
 
 vim.keymap.set('n', '<leader>d', vim.diagnostic.open_float, { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>ap", function()
@@ -302,7 +293,7 @@ vim.g.UltiSnipsJumpForwardTrigger = '<tab>'
 vim.g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
 vim.g.UltiSnipsEditSplit = 'vertical'
 
-local capabilities = require("cmp_nvim_lsp").default_capabilities()
+local capabilities = require("blink.cmp").get_lsp_capabilities()
 vim.api.nvim_create_autocmd("LspAttach", {
     callback = function(args)
         local bufnr = args.buf
@@ -368,10 +359,47 @@ vim.lsp.config("clangd", {
 
 vim.lsp.config("lua_ls", {
     capabilities = capabilities,
+    root_markers = {
+        ".luarc.json",
+        ".luarc.jsonc",
+        ".stylua.toml",
+        "stylua.toml",
+        "selene.toml",
+        "selene.yml",
+        ".git",
+    },
+
+    settings = {
+        Lua = {
+            workspace = {
+                checkThirdParty = false,
+            },
+        },
+    },
 })
 
 vim.lsp.config("rust_analyzer", {
     capabilities = capabilities,
+    settings = {
+        ["rust-analyzer"] = {
+            checkOnSave = false,
+
+            cargo = {
+                allFeatures = false,
+                loadOutDirsFromCheck = false,
+            },
+            files = {
+                excludeDirs = {
+                    ".git",
+                    "target",
+                    "node_modules",
+                },
+            },
+            diagnostics = {
+                enable = true,
+            },
+        },
+    },
 })
 
 vim.lsp.config("zls", {
@@ -420,96 +448,217 @@ vim.lsp.config("vtsls", {
     },
 })
 
-vim.lsp.enable({
-    "clangd",
-    "lua_ls",
-    "rust_analyzer",
-    "zls",
-    "vtsls",
-    "vue_ls",
-    "astro",
-    "svelte",
-    "tailwindcss",
-    "eslint",
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = { "c", "cpp" },
+    callback = function()
+        vim.lsp.enable("clangd")
+    end,
 })
 
-require('mason').setup({})
-local cmp = require 'cmp'
-local cmp_select = { behavior = cmp.SelectBehavior.Select }
-cmp.setup({
-    performance = {
-        debounce = 0,
-        throttle = 0,
-        fetching_timeout = 120,
-        async_budget = 8,
-        max_view_entries = 20,
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "lua",
+    callback = function()
+        vim.lsp.enable("lua_ls")
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "rust",
+    callback = function()
+        vim.lsp.enable("rust_analyzer")
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = { "zig", "zir" },
+    callback = function()
+        vim.lsp.enable("zls")
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "astro",
+    callback = function()
+        vim.lsp.enable("astro")
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "svelte",
+    callback = function()
+        vim.lsp.enable("svelte")
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = { "vue" },
+    callback = function()
+        vim.lsp.enable("vue_ls")
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = {
+        "html",
+        "css",
+        "scss",
+        "javascriptreact",
+        "typescriptreact",
+        "vue",
+        "astro",
+        "svelte",
     },
+    callback = function()
+        vim.lsp.enable("tailwindcss")
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = {
+        "javascript",
+        "typescript",
+        "javascriptreact",
+        "typescriptreact",
+        "vue",
+    },
+    callback = function()
+        vim.lsp.enable("vtsls")
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = {
+        "javascript",
+        "typescript",
+        "javascriptreact",
+        "typescriptreact",
+        "vue",
+        "svelte",
+        "astro",
+    },
+    callback = function()
+        vim.lsp.enable("eslint")
+    end,
+})
+
+
+require("blink.cmp").setup({
+    keymap = {
+        preset = "none",
+        ["<C-e>"] = { "show", "show_documentation", "hide_documentation" },
+        ["<C-a>"] = { "hide" },
+        ["<C-s>"] = { "accept" },
+
+        ["<C-n>"] = { "select_next", "fallback" },
+        ["<C-p>"] = { "select_prev", "fallback" },
+
+        ["<C-f>"] = { "scroll_documentation_down", "fallback" },
+        ["<C-b>"] = { "scroll_documentation_up", "fallback" },
+    },
+
     completion = {
-        keyword_length = 2,
-        autocomplete = false,
-    },
-    snippet = {
-        expand = function(args)
-            require 'luasnip'.lsp_expand(args.body)
-        end,
-    },
-    mapping = cmp.mapping.preset.insert({
-        ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-        ['<C-f>'] = cmp.mapping.scroll_docs(4),
-        ['<C-e>'] = cmp.mapping.complete(),
-        ['<C-a>'] = cmp.mapping.abort(),
-        ['<C-s>'] = cmp.mapping.confirm({ select = false }),
-        ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
-        ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
-    }),
-    sources = cmp.config.sources({
-        { name = "nvim_lsp", keyword_length = 2 },
-        { name = "path" },
-        { name = "luasnip" },
-        {
-            name = "buffer",
-            keyword_length = 5,
-            option = {
-                get_bufnrs = function()
-                    return { vim.api.nvim_get_current_buf() }
-                end,
+        menu = {
+            auto_show = false,
+        },
+        documentation = {
+            auto_show = false,
+        },
+        list = {
+            selection = {
+                preselect = true,
+                auto_insert = false,
             },
         },
-    }),
-})
+    },
 
+    sources = {
+        default = { "lsp", "path", "snippets", "buffer" },
+        providers = {
+            buffer = {
+                opts = {
+                    get_bufnrs = function()
+                        return { vim.api.nvim_get_current_buf() }
+                    end,
+                },
+            },
+        },
+    },
+
+    snippets = {
+        preset = "luasnip",
+    },
+
+    fuzzy = {
+        implementation = "prefer_rust_with_warning",
+    },
+})
 
 require("luasnip").setup({ enable_autosnippets = true })
 require("luasnip.loaders.from_lua").load({ paths = "~/.config/nvim/snippets/" })
 
 vim.api.nvim_create_autocmd("BufWritePost", {
-  pattern = "*.md",
-  callback = function()
-    local file = vim.fn.expand("%:p")
-    local pdf = vim.fn.expand("%:p:r") .. ".pdf"
+    pattern = "*.md",
+    callback = function()
+        local file = vim.fn.expand("%:p")
+        local pdf = vim.fn.expand("%:p:r") .. ".pdf"
 
-    vim.fn.jobstart({ "pandoc", file, "-o", pdf }, { detach = true })
-  end,
+        vim.fn.jobstart({ "pandoc", file, "-o", pdf }, { detach = true })
+    end,
 })
 
 vim.keymap.set("n", "<leader>mp", function()
-  local pdf = vim.fn.expand("%:p:r") .. ".pdf"
-  vim.fn.jobstart({ "zathura", pdf }, { detach = true })
+    local pdf = vim.fn.expand("%:p:r") .. ".pdf"
+    vim.fn.jobstart({ "zathura", pdf }, { detach = true })
 end, { desc = "Open Markdown PDF in Zathura" })
 
 
 vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter", "VimEnter" }, {
-  callback = function()
-    if vim.w.git_conflict_matches then
-      return
-    end
+    callback = function()
+        if vim.w.git_conflict_matches then
+            return
+        end
 
-    vim.w.git_conflict_matches = {
-      vim.fn.matchadd("ConflictMarker", [[^<<<<<<< .*$]]),
-      vim.fn.matchadd("ConflictMarker", [[^=======$]]),
-      vim.fn.matchadd("ConflictMarker", [[^>>>>>>> .*$]]),
-    }
-  end,
+        vim.w.git_conflict_matches = {
+            vim.fn.matchadd("ConflictMarker", [[^<<<<<<< .*$]]),
+            vim.fn.matchadd("ConflictMarker", [[^=======$]]),
+            vim.fn.matchadd("ConflictMarker", [[^>>>>>>> .*$]]),
+        }
+    end,
 })
 
+vim.api.nvim_create_user_command("JsonToTs", function()
+    local name = vim.fn.input("Type name: ")
+    if name == "" then name = "Root" end
+
+    local cmd = "xclip -selection clipboard -o | quicktype --lang ts --top-level " .. vim.fn.shellescape(name)
+    local output = vim.fn.systemlist(cmd)
+
+    if vim.v.shell_error ~= 0 then
+        vim.notify(table.concat(output, "\n"), vim.log.levels.ERROR)
+        return
+    end
+
+    vim.api.nvim_put(output, "l", true, true)
+end, {})
+
 require("intro");
+require("lsp_idle").setup()
+local disabled_built_ins = {
+    "gzip",
+    "zip",
+    "zipPlugin",
+    "tar",
+    "tarPlugin",
+    "getscript",
+    "getscriptPlugin",
+    "vimball",
+    "vimballPlugin",
+    "2html_plugin",
+    "logipat",
+    "rrhelper",
+    "spellfile_plugin",
+}
+
+for _, plugin in pairs(disabled_built_ins) do
+    vim.g["loaded_" .. plugin] = 1
+end

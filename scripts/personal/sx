@@ -1,0 +1,54 @@
+#!/usr/bin/env fish
+
+# Use current directory as project root
+set -l WORKDIR (pwd)
+
+# Session name = current folder name, sanitized for tmux
+set -l PROJECT_NAME (basename "$WORKDIR")
+set -l SESH (string replace -ra '[^a-zA-Z0-9_-]' '_' "$PROJECT_NAME")
+
+# Detect project type
+set -l BUILD_NAME compile
+set -l BUILD_CMD ""
+
+if test -f "$WORKDIR/Cargo.toml"
+    set BUILD_NAME compile
+    set BUILD_CMD "cargo run"
+else if test -f "$WORKDIR/main.cpp"
+    set BUILD_NAME compile
+    set BUILD_CMD "g++ main.cpp -o main"
+else if test -f "$WORKDIR/build.zig"
+    set BUILD_NAME compile
+    set BUILD_CMD "zig build"
+else if test -f "$WORKDIR/package.json"
+    set BUILD_NAME server
+    set BUILD_CMD ""
+end
+
+tmux has-session -t "$SESH" 2>/dev/null
+
+if test $status -ne 0
+    tmux new-session -d -s "$SESH" -n nvim -c "$WORKDIR"
+    tmux send-keys -t "$SESH:nvim" "nvim" C-m
+
+    tmux new-window -t "$SESH" -n "$BUILD_NAME" -c "$WORKDIR"
+    tmux send-keys -t "$SESH:$BUILD_NAME" "clear" C-m
+
+    if test -n "$BUILD_CMD"
+        tmux send-keys -t "$SESH:$BUILD_NAME" "$BUILD_CMD" C-m
+    end
+
+    tmux new-window -t "$SESH" -n lazygit -c "$WORKDIR"
+    tmux send-keys -t "$SESH:lazygit" "clear" C-m
+    tmux send-keys -t "$SESH:lazygit" "test -d .git; or git init" C-m
+    tmux send-keys -t "$SESH:lazygit" "lazygit" C-m
+
+    # agent
+    tmux new-window -t "$SESH" -n agent -c "$WORKDIR"
+    tmux send-keys -t "$SESH:agent" "clear" C-m
+    tmux send-keys -t "$SESH:agent" "opencode ." C-m
+
+    tmux select-window -t "$SESH:nvim"
+end
+
+tmux attach-session -t "$SESH"

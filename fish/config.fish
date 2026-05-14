@@ -6,16 +6,11 @@ set -x LS_COLORS 'di=1;38;5;218:fi=0'
 
 alias grep='grep --color=auto'
 alias recon-ng='/home/leverna/packages/recon-ng/recon-ng'
-alias im='nvim'
+alias vim='nvim'
 alias wmqttx='nohup flatpak run com.emqx.MQTTX &> /dev/null &'
 alias sortty='python3 /usr/local/bin/sortty-bin/sortty.py'
 alias php82='/usr/local/php82/bin/php'
 alias fman='commandline -f insert-command; compgen -c | fzf | xargs man'
-alias fold='~/scripts/fzf-oldfiles.sh'
-alias zen='~/packages/zen/zen'
-alias lett='~/lettbar/zig-out/bin/lettbar'
-alias sslscan='/home/leverna/packages/sslscan/sslscan'
-alias roblox='flatpak run org.vinegarhq.Sober'
 
 alias beef='/home/leverna/packages/beef-master/beef'
 
@@ -23,12 +18,10 @@ alias beef='/home/leverna/packages/beef-master/beef'
 # PATHs
 set -Ux PATH $PATH /usr/bin $HOME/.cargo/bin $HOME/.local/bin $HOME/flutter/flutter/bin $HOME/.config/composer/vendor/bin $HOME/go/bin /opt/cuda/bin $HOME/RegRipper3.0
 
-# flutter
 if test -d "$HOME/flutter/flutter/bin"
     set -x PATH $PATH $HOME/flutter/flutter/bin
 end
 
-# cargo env
 # cargo (Rust)
 set -x CARGO_HOME $HOME/.cargo
 set -x PATH $CARGO_HOME/bin $PATH
@@ -59,6 +52,10 @@ set -x LLDB_USE_NATIVE_PDB_READER "yes"
 abbr --add zbr zig build run
 abbr --add zz z ..
 
-bind \ch backward-word
-bind \cl forward-word
 
+
+# uv
+fish_add_path "/home/nukkua/.local/bin"
+
+# opencode
+fish_add_path /home/nukkua/.opencode/bin
