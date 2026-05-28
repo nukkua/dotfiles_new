@@ -1,0 +1,211 @@
+---
+/* Pagefind search UI mount point.
+ * Loads pagefind-ui.js + pagefind-ui.css only on docs pages.
+ * Pagefind's CSS variables map a few surfaces (primary, text, background,
+ * border, tag, scale, font) to design tokens; everything else
+ * (mark/highlight, clear button, result message, excerpt body) is patched
+ * via :global() rules below — Pagefind injects markup at runtime, so Astro
+ * cannot scope it. Selector chain `#search .pagefind-ui .pagefind-ui__*`
+ * has specificity (0,2,1), beating Pagefind's `.pagefind-ui__x.svelte-xxx`
+ * (0,2,0) regardless of stylesheet order. */
+---
+
+<div id="search"></div>
+
+<style>
+	/* Token bridge — Pagefind variables fed from the sumi/washi system.
+	   `--pagefind-ui-font` (not `-font-family` — that key does not exist in
+	   Pagefind UI and was a no-op in the previous version of this file). */
+	:root {
+		--pagefind-ui-scale: 0.7;
+		--pagefind-ui-primary: var(--sage);
+		--pagefind-ui-text: var(--text);
+		--pagefind-ui-background: var(--ink-raised);
+		--pagefind-ui-border: var(--rule);
+		--pagefind-ui-tag: var(--kuro);
+		--pagefind-ui-border-width: 1px;
+		--pagefind-ui-border-radius: var(--radius-sm);
+		--pagefind-ui-font: var(--font-mono);
+	}
+
+	#search {
+		margin-bottom: var(--space-5);
+	}
+</style>
+
+<style is:global>
+	/* === Search input — mono, sage focus ring, no Pagefind default blue === */
+	#search .pagefind-ui .pagefind-ui__search-input {
+		font-family: var(--font-mono);
+		font-weight: 500;
+		color: var(--text);
+		background: var(--ink-raised);
+		border: 1px solid var(--rule);
+		transition:
+			border-color var(--dur-quick) var(--ease-ink),
+			box-shadow var(--dur-quick) var(--ease-ink);
+	}
+	#search .pagefind-ui .pagefind-ui__search-input::placeholder {
+		color: var(--text-distant);
+		opacity: 1;
+	}
+	#search .pagefind-ui .pagefind-ui__search-input:focus,
+	#search .pagefind-ui .pagefind-ui__search-input:focus-visible {
+		outline: none;
+		border-color: var(--sage);
+		box-shadow: 0 0 0 1px var(--sage);
+	}
+
+	/* === Clear control — mono kicker, not a chunky button === */
+	#search .pagefind-ui .pagefind-ui__search-clear {
+		font-family: var(--font-mono);
+		font-size: var(--type-kicker);
+		font-weight: 400;
+		color: var(--text-quiet);
+		background: transparent;
+		text-transform: lowercase;
+		letter-spacing: 0.08em;
+		transition: color var(--dur-quick) var(--ease-ink);
+	}
+	#search .pagefind-ui .pagefind-ui__search-clear:hover {
+		color: var(--sage);
+		background: transparent;
+	}
+
+	/* === Result-count chrome ("30 results for skill") — kicker mono === */
+	#search .pagefind-ui .pagefind-ui__message {
+		font-family: var(--font-mono);
+		font-size: var(--type-kicker);
+		font-weight: 400;
+		color: var(--text-distant);
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+
+	/* === Results scroll container — bounded so docs nav stays visible.
+	   The outer <aside> in DocsLayout is the page-level scroll; results get
+	   their own region inside it. Single scroll context per visual stack. === */
+	#search .pagefind-ui .pagefind-ui__results-area {
+		max-height: 55vh;
+		overflow-y: auto;
+		padding-right: var(--space-2);
+		/* Negative margin so the scrollbar gutter doesn't push content. */
+		margin-right: calc(var(--space-2) * -1);
+		border-top: 1px solid var(--rule);
+		padding-top: var(--space-3);
+	}
+
+	/* === Result row — tighter rhythm for a 220px column === */
+	#search .pagefind-ui .pagefind-ui__result {
+		padding: var(--space-4) 0;
+		border-top: 1px solid var(--rule);
+	}
+	#search .pagefind-ui .pagefind-ui__result:first-of-type {
+		border-top: none;
+	}
+	#search .pagefind-ui .pagefind-ui__result:last-of-type {
+		border-bottom: none;
+	}
+
+	/* === Result title — serif, washi text, sage on hover === */
+	#search .pagefind-ui .pagefind-ui__result-title {
+		font-family: var(--font-serif);
+		font-size: var(--type-base);
+		font-weight: 500;
+		line-height: var(--leading-snug);
+	}
+	#search .pagefind-ui .pagefind-ui__result-link {
+		font-family: var(--font-serif);
+		color: var(--text);
+		text-decoration: none;
+		transition: color var(--dur-quick) var(--ease-ink);
+	}
+	#search .pagefind-ui .pagefind-ui__result-link:hover {
+		color: var(--sage);
+		text-decoration: none;
+	}
+
+	/* === Excerpt body — lift to readable contrast (was text-distant) === */
+	#search .pagefind-ui .pagefind-ui__result-excerpt {
+		font-family: var(--font-serif);
+		font-size: var(--type-small);
+		line-height: var(--leading-relaxed);
+		color: var(--text-quiet);
+		margin-top: var(--space-2);
+	}
+
+	/* === Highlight mark — ochre wash, not Pagefind's browser-default yellow.
+	   The Pagefind reset emits `.pagefind-ui--reset mark { all: revert }`
+	   which restores the user-agent yellow; we override post-reset. === */
+	#search .pagefind-ui mark,
+	#search .pagefind-ui--reset mark {
+		background: color-mix(in oklab, var(--ochre) 35%, transparent);
+		color: var(--washi);
+		padding: 0 2px;
+		border-radius: var(--radius-xs);
+	}
+
+	/* === Sub-results ("↳ When NOT to reset") — tighter, distinct hierarchy === */
+	#search .pagefind-ui .pagefind-ui__result-nested {
+		padding-top: var(--space-3);
+	}
+	#search .pagefind-ui .pagefind-ui__result-nested .pagefind-ui__result-link {
+		font-size: var(--type-small);
+	}
+
+	/* === Load-more button — flat outline, mono, no chunky default === */
+	#search .pagefind-ui .pagefind-ui__button {
+		font-family: var(--font-mono);
+		font-size: var(--type-kicker);
+		font-weight: 400;
+		color: var(--text-quiet);
+		background: transparent;
+		border: 1px solid var(--rule);
+		text-transform: lowercase;
+		letter-spacing: 0.08em;
+		transition:
+			color var(--dur-quick) var(--ease-ink),
+			border-color var(--dur-quick) var(--ease-ink);
+	}
+	#search .pagefind-ui .pagefind-ui__button:hover {
+		color: var(--sage);
+		border-color: var(--sage-deep);
+		background: transparent;
+	}
+
+	/* === Result tag chip — kuro chip, mono === */
+	#search .pagefind-ui .pagefind-ui__result-tag {
+		font-family: var(--font-mono);
+		font-size: var(--type-micro);
+		color: var(--text-quiet);
+	}
+</style>
+
+<script>
+	(() => {
+		const el = document.getElementById("search");
+		if (!el) return;
+
+		// Dynamic load — avoids 404 errors during astro dev when Pagefind files don't exist
+		const loadCSS = document.createElement("link");
+		loadCSS.href = "/pagefind/pagefind-ui.css";
+		loadCSS.rel = "stylesheet";
+		loadCSS.onerror = () => {}; // suppress 404
+		document.head.appendChild(loadCSS);
+
+		const loadJS = document.createElement("script");
+		loadJS.src = "/pagefind/pagefind-ui.js";
+		loadJS.onload = () => {
+			// @ts-expect-error — PagefindUI is loaded dynamically at runtime
+			if (typeof PagefindUI === "undefined") return;
+			// @ts-expect-error — runtime global from pagefind-ui.js
+			new PagefindUI({
+				element: "#search",
+				showSubResults: true,
+				showImages: false,
+			});
+		};
+		loadJS.onerror = () => {}; // suppress 404
+		document.head.appendChild(loadJS);
+	})();
+</script>

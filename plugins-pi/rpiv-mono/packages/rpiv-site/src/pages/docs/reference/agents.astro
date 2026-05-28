@@ -1,0 +1,103 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+import { type CapabilityTier, getAgentsByTier } from "../../../lib/agents";
+
+const tiers = await getAgentsByTier();
+
+const TIER_LABELS: Record<CapabilityTier, string> = {
+	locator: "Locators",
+	analyzer: "Analyzers",
+	specialist: "Specialists",
+	external: "External",
+};
+---
+
+<DocsLayout title="Agents Reference · rpiv-pi docs" description="Reference index of all rpiv-pi subagents." docArticle={{ section: "reference" }}>
+	<article data-pagefind-body>
+		<h1 data-pagefind-meta="title">Agents Reference</h1>
+		<p class="docs-lede">All subagents available in rpiv-pi, grouped by capability tier.</p>
+		{tiers.map(({ tier: t, agents }) => {
+			if (agents.length === 0) return null;
+			return (
+				<div class="ref-tier">
+					<h2 class="ref-tier__title">{TIER_LABELS[t]}</h2>
+					<div class="ref-list">
+						{agents.map((agent) => {
+							const dispatchCount = agent.copy?.dispatched_by?.length ?? 0;
+							return (
+								<article class="ref-item">
+									<a href={`/docs/reference/agents/${agent.slug}`} class="ref-item__title">
+										<h3 class="mono">{agent.slug}</h3>
+									</a>
+									<p class="ref-item__desc">{agent.tagline}</p>
+									{dispatchCount > 0 && (
+										<span class="chip chip--muted">{dispatchCount} dispatches</span>
+									)}
+								</article>
+							);
+						})}
+					</div>
+				</div>
+			);
+		})}
+	</article>
+</DocsLayout>
+
+<style>
+	h1 {
+		font-size: var(--type-h2);
+		line-height: var(--leading-snug);
+		margin-bottom: var(--space-4);
+	}
+
+	/* .docs-lede lives in prose.css; this page only needs its index-specific
+	   extras (a touch more breathing room below the lede before the tiers). */
+	.docs-lede {
+		margin-bottom: var(--space-7);
+	}
+
+	.ref-tier {
+		margin-bottom: var(--space-7);
+	}
+
+	.ref-tier__title {
+		font-size: var(--type-h3);
+		line-height: var(--leading-snug);
+		margin-bottom: var(--space-5);
+	}
+
+	.ref-list {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.ref-item {
+		padding: var(--space-5) 0;
+		border-bottom: 1px solid var(--rule);
+	}
+
+	.ref-item__title {
+		color: var(--washi);
+		border-bottom: none;
+		text-decoration: none;
+		display: block;
+		margin-bottom: var(--space-2);
+		transition: color var(--dur-ink) var(--ease-ink);
+	}
+	.ref-item__title:hover {
+		color: var(--sage);
+	}
+	.ref-item__title h3 {
+		font-size: var(--type-h3);
+		line-height: var(--leading-snug);
+		margin: 0;
+	}
+
+	.ref-item__desc {
+		color: var(--text-quiet);
+		font-size: var(--type-small);
+		line-height: var(--leading-relaxed);
+		margin: 0 0 var(--space-2);
+		max-width: 64ch;
+	}
+</style>

@@ -1,0 +1,215 @@
+---
+import Base from "./Base.astro";
+import Nav from "../components/Nav.astro";
+import DocsSidebar from "../components/DocsSidebar.astro";
+import DocsToc from "../components/DocsToc.astro";
+import Search from "../components/Search.astro";
+import SumiInk from "../components/SumiInk.astro";
+import { getDocsBySection, type DocSection } from "../lib/docs";
+import "../styles/prose.css";
+
+interface Props {
+	title: string;
+	description?: string;
+	docArticle?: {
+		section: DocSection;
+	};
+	headings?: Array<{ depth: number; slug: string; text: string }>;
+}
+
+const { title, description, docArticle, headings = [] } = Astro.props;
+const sections = await getDocsBySection();
+const currentPath = Astro.url.pathname;
+---
+
+<Base {title} {description} {docArticle}>
+	<Nav />
+	<div class:list={["docs-layout", headings.length > 0 && "has-toc"]}>
+		<button class="docs-layout__toggle" aria-label="Toggle navigation" data-docs-toggle>
+			☰
+		</button>
+		<aside class="docs-sidebar" data-docs-sidebar>
+			<Search />
+			<DocsSidebar {sections} {currentPath} />
+		</aside>
+		<main class="docs-content">
+			{/* Faint sumi seal carries the brand atmosphere past the docs
+			   landing into the reading surface. Pointer-events:none + low
+			   opacity in CSS keeps it ambient, not interactive. */}
+			<SumiInk variant="corner" className="docs-content__sumi" />
+			<slot />
+		</main>
+		{headings.length > 0 && (
+			<aside class="docs-toc">
+				<DocsToc {headings} />
+			</aside>
+		)}
+	</div>
+</Base>
+
+<style>
+	.docs-layout {
+		/* 240px sidebar (was 220) — gives the Pagefind input + section nav
+		   room without the input wrapping or the nav items squeezing. */
+		display: grid;
+		grid-template-columns: 240px minmax(0, 1fr);
+		gap: 0;
+		max-width: 1280px;
+		margin: 0 auto;
+		padding: 0 var(--space-5);
+		min-height: calc(100dvh - var(--space-8));
+	}
+
+	.docs-layout.has-toc {
+		grid-template-columns: 240px minmax(0, 1fr) 180px;
+	}
+
+	.docs-sidebar {
+		position: sticky;
+		top: var(--space-8);
+		max-height: calc(100dvh - var(--space-8));
+		overflow-y: auto;
+		border-right: 1px solid var(--rule);
+		padding-right: var(--space-5);
+		margin-right: var(--space-5);
+		padding-top: var(--space-7);
+		padding-bottom: var(--space-7);
+	}
+
+	.docs-content {
+		position: relative;
+		min-width: 0;
+		padding-top: var(--space-7);
+		padding-bottom: var(--space-9);
+	}
+
+	/* Ambient brand seal — sits inside the content column so it never
+	   bleeds under the TOC. Positioned top-right at low opacity; ignored
+	   by pointer events and reduced-motion alike. */
+	.docs-content__sumi {
+		position: absolute;
+		top: var(--space-5);
+		right: 0;
+		width: 96px;
+		opacity: 0.12;
+		pointer-events: none;
+		z-index: 0;
+	}
+	.docs-content > :not(.docs-content__sumi) {
+		position: relative;
+		z-index: 1;
+	}
+	@media (max-width: 720px) {
+		.docs-content__sumi { display: none; }
+	}
+
+	/* Ensure TOC anchor targets scroll below the sticky nav */
+	.docs-content :is(h2, h3, h4) {
+		scroll-margin-top: var(--space-8);
+	}
+
+	.docs-toc {
+		position: sticky;
+		top: var(--space-8);
+		max-height: calc(100dvh - var(--space-8));
+		overflow-y: auto;
+		border-left: 1px solid var(--rule);
+		padding-left: var(--space-4);
+		margin-left: var(--space-5);
+		padding-top: var(--space-7);
+	}
+
+	/* Mobile hamburger — hidden on desktop */
+	.docs-layout__toggle {
+		display: none;
+		background: none;
+		border: 1px solid var(--rule);
+		color: var(--text-distant);
+		font-size: var(--type-small);
+		padding: var(--space-1) var(--space-3);
+		cursor: pointer;
+		border-radius: var(--radius-sm);
+		line-height: 1;
+		margin-bottom: var(--space-3);
+	}
+	.docs-layout__toggle:hover {
+		color: var(--sage);
+		border-color: var(--rule-strong);
+	}
+
+	/* Mobile: sidebar becomes a drawer.
+	   Both selectors needed — .has-toc has (0,2,0) specificity which
+	   would win over a bare .docs-layout (0,1,0) inside this media query,
+	   keeping the 3-column grid active on narrow screens. */
+	@media (max-width: 720px) {
+		.docs-layout,
+		.docs-layout.has-toc {
+			grid-template-columns: 1fr;
+			max-width: 100%;
+			padding: 0 var(--space-4);
+		}
+
+		.docs-layout__toggle {
+			display: inline-block;
+		}
+
+		.docs-sidebar {
+			display: none;
+		}
+
+		.docs-sidebar.is-open {
+			display: block;
+			position: fixed;
+			inset: 0;
+			left: 0;
+			top: 0;
+			z-index: 20;
+			max-height: 100dvh;
+			max-width: 280px;
+			background: var(--ink);
+			border-right: 1px solid var(--rule);
+			padding: var(--space-7) var(--space-5);
+			overflow-y: auto;
+		}
+
+		.docs-sidebar.is-open::before {
+			content: "";
+			position: fixed;
+			inset: 0;
+			left: 280px;
+			top: 0;
+			background: rgba(0, 0, 0, 0.5);
+			z-index: -1;
+		}
+
+		.docs-toc {
+			display: none;
+		}
+	}
+</style>
+
+<script>
+	(() => {
+		const sidebar = document.querySelector<HTMLElement>("[data-docs-sidebar]");
+		const toggle = document.querySelector<HTMLButtonElement>("[data-docs-toggle]");
+		if (!sidebar || !toggle) return;
+
+		toggle.addEventListener("click", () => {
+			sidebar.classList.toggle("is-open");
+		});
+
+		document.addEventListener("keydown", (e) => {
+			if (e.key === "Escape" && sidebar.classList.contains("is-open")) {
+				sidebar.classList.remove("is-open");
+			}
+		});
+
+		sidebar.querySelectorAll("a").forEach((link) => {
+			link.addEventListener("click", () => {
+				if (window.innerWidth <= 720) {
+					sidebar.classList.remove("is-open");
+				}
+			});
+		});
+	})();
+</script>

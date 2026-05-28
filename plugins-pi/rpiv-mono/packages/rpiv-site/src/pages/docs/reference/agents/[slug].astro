@@ -1,0 +1,120 @@
+---
+import type { GetStaticPaths } from "astro";
+import { getCollection, render } from "astro:content";
+import DocsLayout from "../../../../layouts/DocsLayout.astro";
+import { TIER_BY_NAME, getAgent, getAgentSpec, tier } from "../../../../lib/agents";
+import { inlineMd } from "../../../../lib/inlineMd";
+
+export const getStaticPaths: GetStaticPaths = async () => {
+	const specs = await getCollection("agentSpecs");
+	return specs
+		.filter((spec) => spec.data.name in TIER_BY_NAME)
+		.map((spec) => ({
+			params: { slug: spec.data.name },
+			props: { name: spec.data.name },
+		}));
+};
+
+const { name } = Astro.props;
+const agent = await getAgent(name);
+
+const specEntry = await getAgentSpec(name);
+const { Content, headings } = await render(specEntry);
+
+// Hand-built TOC contract: 4 fixed entries + body headings filtered to the
+// same depth range DocsToc enforces. Place `dispatched-by` LAST so the
+// scroll-spy stays monotonic — body headings appear in their natural source
+// order between the fixed §03 anchor and the final §04 anchor.
+const tools = agent.data.tools?.split(",").map((t) => t.trim()).filter(Boolean) ?? [];
+
+const bodyHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+const structuredHeadings = [
+	agent.copy?.purpose && { depth: 2, slug: "purpose", text: "Purpose" },
+	agent.copy?.when_to_use && { depth: 2, slug: "when-to-use", text: "When to use it" },
+	{ depth: 2, slug: "spec", text: "Spec" },
+	...bodyHeadings,
+	agent.copy?.dispatched_by?.length && { depth: 2, slug: "dispatched-by", text: "Dispatched by" },
+].filter(Boolean);
+---
+
+<DocsLayout
+	title={`${agent.slug} · rpiv-pi docs`}
+	description={agent.tagline}
+	headings={structuredHeadings as never}
+	docArticle={{ section: "reference" }}
+>
+	<article class="prose prose--docs" data-pagefind-body>
+		<p class="kicker">§ reference · agent</p>
+		<h1 data-pagefind-meta="title" class="mono">{agent.slug}</h1>
+		<p class="docs-lede">{agent.tagline}</p>
+		<div class="ref-meta">
+			<span class="chip chip--sage">{tier(agent)}</span>
+			{tools.map((t) => (
+				<span class="chip chip--muted"><code>{t}</code></span>
+			))}
+			{agent.data.isolated === true && (
+				<span class="chip chip--ochre">isolated</span>
+			)}
+		</div>
+
+		{agent.copy?.purpose && (
+			<section class="ref-section">
+				<p class="kicker">§ 01 · purpose</p>
+				<h2 id="purpose">Purpose</h2>
+				<p set:html={inlineMd(agent.copy?.purpose)} />
+			</section>
+		)}
+
+		{agent.copy?.when_to_use && (
+			<section class="ref-section">
+				<p class="kicker">§ 02 · when to use</p>
+				<h2 id="when-to-use">When to use it</h2>
+				<p set:html={inlineMd(agent.copy?.when_to_use)} />
+			</section>
+		)}
+
+		<section class="ref-section">
+			<p class="kicker">§ 03 · spec</p>
+			<h2 id="spec">Spec</h2>
+			<Content />
+		</section>
+
+		{agent.copy?.dispatched_by && agent.copy.dispatched_by.length > 0 && (
+			<section class="ref-section">
+				<p class="kicker">§ 04 · dispatched by</p>
+				<h2 id="dispatched-by">Dispatched by</h2>
+				<div class="rel-chips">
+					{agent.copy.dispatched_by.map((s) => (
+						<a href={`/docs/reference/skills/${s}/`} class="chip chip--sage">{s}</a>
+					))}
+				</div>
+			</section>
+		)}
+	</article>
+</DocsLayout>
+
+<style>
+	/* Header rhythm + ref-meta + ref-section live in src/styles/global.css —
+	   shared with pages/docs/reference/skills/[slug].astro. .docs-lede lives
+	   in src/styles/prose.css. No local overrides; deletions of the prior
+	   `.docs-lede` + `.ref-meta` blocks are intentional. */
+
+	/* ─── Dispatched-by chip rail (mirrors skill page .rel-chips) ─── */
+	.rel-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+	/* Chips inside .rel-chips need link behavior — override global .chip
+	   which doesn't carry a sage underline by default. */
+	.rel-chips a.chip {
+		border-bottom-color: var(--sage-deep);
+		transition:
+			color var(--dur-quick) var(--ease-ink),
+			border-color var(--dur-quick) var(--ease-ink);
+	}
+	.rel-chips a.chip:hover {
+		color: var(--washi);
+		border-bottom-color: var(--sage);
+	}
+</style>

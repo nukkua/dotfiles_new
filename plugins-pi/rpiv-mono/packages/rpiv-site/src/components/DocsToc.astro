@@ -1,0 +1,144 @@
+---
+interface Props {
+	headings: Array<{ depth: number; slug: string; text: string }>;
+}
+
+const { headings } = Astro.props;
+const visible = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+---
+
+{visible.length > 0 && (
+	<nav class="docs-toc__nav" aria-label="Table of contents">
+		<p class="kicker kicker--accent">On this page</p>
+		<ul class="docs-toc__list">
+			{visible.map((heading) => (
+				<li
+					class:list={[
+						"docs-toc__item",
+						heading.depth === 3 && "docs-toc__item--indent",
+					]}
+				>
+					<a href={`#${heading.slug}`} class="docs-toc__link" data-toc-link>
+						{heading.text}
+					</a>
+				</li>
+			))}
+		</ul>
+	</nav>
+)}
+
+<style>
+	.docs-toc__nav {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	/* The .kicker--accent (sage) variant lifts the label above the link list
+	   (which sits at text-quiet) so it reads as a distinct group header. */
+	.docs-toc__nav .kicker {
+		margin-bottom: var(--space-2);
+	}
+
+	.docs-toc__list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.docs-toc__item {
+		margin: 0;
+	}
+
+	.docs-toc__item--indent {
+		padding-left: var(--space-3);
+	}
+
+	/* Link — quiet by default, washi + sage hairline when active.
+	   border-inline-start reserves space at rest so the active state doesn't
+	   shift the row; transparent → sage on activation, no layout jump. */
+	.docs-toc__link {
+		display: block;
+		font-family: var(--font-mono);
+		font-size: var(--type-tiny);
+		line-height: var(--leading-relaxed);
+		color: var(--text-quiet);
+		text-decoration: none;
+		border-bottom: none;
+		border-inline-start: 1px solid transparent;
+		padding-inline-start: var(--space-3);
+		transition:
+			color var(--dur-quick) var(--ease-ink),
+			border-color var(--dur-quick) var(--ease-ink);
+	}
+	.docs-toc__link:hover {
+		color: var(--sage);
+	}
+	.docs-toc__link.is-active {
+		color: var(--washi);
+		border-inline-start-color: var(--sage);
+	}
+</style>
+
+<script>
+	(() => {
+		const links = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-toc-link]"));
+		if (!links.length) return;
+
+		const targets = links
+			.map((link) => {
+				const id = link.getAttribute("href")?.slice(1);
+				if (!id) return null;
+				const el = document.getElementById(id);
+				return el ? { link, el } : null;
+			})
+			.filter((x): x is { link: HTMLAnchorElement; el: HTMLElement } => !!x);
+
+		if (!targets.length) return;
+
+		const offsets = new Array<number>(targets.length);
+		const measure = () => {
+			const baseY = window.scrollY;
+			for (let i = 0; i < targets.length; i++) {
+				offsets[i] = targets[i].el.getBoundingClientRect().top + baseY;
+			}
+		};
+
+		let rafId = 0;
+		const setActive = () => {
+			rafId = 0;
+			const anchor = window.scrollY + window.innerHeight * 0.2;
+			let activeIndex = -1;
+			for (let i = 0; i < targets.length; i++) {
+				if (offsets[i] <= anchor) activeIndex = i;
+			}
+			targets.forEach((t, i) => {
+				t.link.classList.toggle("is-active", i === activeIndex);
+			});
+		};
+
+		const onScroll = () => {
+			if (rafId) return;
+			rafId = requestAnimationFrame(setActive);
+		};
+
+		let measureRaf = 0;
+		const scheduleMeasure = () => {
+			if (measureRaf) return;
+			measureRaf = requestAnimationFrame(() => {
+				measureRaf = 0;
+				measure();
+				setActive();
+			});
+		};
+
+		window.addEventListener("scroll", onScroll, { passive: true });
+		window.addEventListener("resize", scheduleMeasure, { passive: true });
+		new ResizeObserver(scheduleMeasure).observe(document.body);
+		measure();
+		setActive();
+	})();
+</script>

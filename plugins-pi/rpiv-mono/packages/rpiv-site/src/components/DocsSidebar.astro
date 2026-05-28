@@ -1,0 +1,117 @@
+---
+import { SECTION_LABELS, type DocEntry, type DocSection } from "../lib/docs";
+
+interface Props {
+	sections: Array<{ section: DocSection; entries: DocEntry[] }>;
+	currentPath: string;
+}
+
+const { sections, currentPath } = Astro.props;
+---
+
+<nav class="docs-nav" aria-label="Documentation navigation">
+	<a href="/docs" class:list={["docs-nav__home mono", currentPath === "/docs" && "is-active"]}>
+		docs
+	</a>
+
+	{sections.map(({ section, entries }) => {
+		if (entries.length === 0 && section !== "reference") return null;
+		return (
+			<div class="docs-nav__group">
+				<p class="kicker">{SECTION_LABELS[section]}</p>
+				<div class="docs-nav__links">
+					{entries.map((entry) => (
+						<a
+							href={`/docs/${entry.id}`}
+							class:list={["docs-nav__link mono", currentPath === `/docs/${entry.id}` && "is-active"]}
+						>
+							{entry.data.title}
+						</a>
+					))}
+				</div>
+				{section === "reference" && (
+					<div class="docs-nav__ref-links">
+						<a
+							href="/docs/reference/skills"
+							class:list={["docs-nav__link docs-nav__link--ref mono", currentPath.startsWith("/docs/reference/skills") && "is-active"]}
+						>
+							Skills
+						</a>
+						<a
+							href="/docs/reference/agents"
+							class:list={["docs-nav__link docs-nav__link--ref mono", currentPath.startsWith("/docs/reference/agents") && "is-active"]}
+						>
+							Agents
+						</a>
+					</div>
+				)}
+			</div>
+		);
+		})}
+</nav>
+
+<style>
+	.docs-nav {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-6);
+	}
+
+	.docs-nav__home {
+		font-size: var(--type-kicker);
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--washi);
+		border-bottom: none;
+		text-decoration: none;
+		transition: color var(--dur-ink) var(--ease-ink);
+	}
+	.docs-nav__home:hover {
+		color: var(--sage);
+	}
+
+	.docs-nav__group {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.docs-nav__links,
+	.docs-nav__ref-links {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.docs-nav__link {
+		font-size: var(--type-small);
+		color: var(--text-quiet);
+		border-bottom: none;
+		text-decoration: none;
+		padding: var(--space-1) 0;
+		border-left: 2px solid transparent;
+		padding-left: 0;
+		transition:
+			color var(--dur-ink) var(--ease-ink),
+			border-color var(--dur-ink) var(--ease-ink);
+	}
+	.docs-nav__link:hover {
+		color: var(--sage);
+	}
+	.docs-nav__link.is-active {
+		color: var(--washi);
+		border-left-color: var(--ochre);
+		padding-left: var(--space-3);
+	}
+
+	.docs-nav__link--ref {
+		color: var(--text-distant);
+		font-size: var(--type-tiny);
+	}
+	.docs-nav__link--ref:hover {
+		color: var(--sage);
+	}
+	.docs-nav__link--ref.is-active {
+		color: var(--washi);
+	}
+</style>

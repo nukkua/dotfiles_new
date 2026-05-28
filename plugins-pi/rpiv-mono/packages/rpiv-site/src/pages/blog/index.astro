@@ -1,0 +1,186 @@
+---
+import Base from "../../layouts/Base.astro";
+import Nav from "../../components/Nav.astro";
+import SumiInk from "../../components/SumiInk.astro";
+import { getAllPosts } from "../../lib/posts";
+
+const posts = await getAllPosts();
+const count = String(posts.length).padStart(2, "0");
+---
+
+<Base
+	title="Blog · rpiv-pi"
+	description="Updates, deep dives, and release notes for rpiv-pi."
+>
+	<Nav />
+	<main>
+		<section class="blog-hero">
+			<SumiInk variant="backdrop" />
+			<div class="container blog-hero__inner">
+				<p class="kicker blog-hero__kicker">§ rpiv-pi · blog</p>
+				<h1 class="blog-hero__title">Field notes.</h1>
+				<p class="blog-hero__lede">
+					Updates, deep dives, and release notes for the rpiv-pi pipeline.
+				</p>
+			</div>
+		</section>
+
+		<section class="blog-list">
+			<div class="container">
+				<div class="post-count-row">
+					<p class="post-count mono">{count} posts</p>
+					<a
+						href="/blog/rss.xml"
+						type="application/rss+xml"
+						class="post-count__feed mono"
+						aria-label="RSS feed"
+					>
+						<SumiInk variant="rss" />
+						<span>rss</span>
+					</a>
+				</div>
+				<div class="post-list">
+					{posts.map((post) => (
+						<article class="post-item">
+							<a href={`/blog/${post.id}`} class="post-item__title">
+								<h3>{post.data.title}</h3>
+							</a>
+							<div class="post-item__meta mono">
+								<time datetime={post.data.pubDate.toISOString()}>
+									{post.data.pubDate.toLocaleDateString("en-US", {
+										year: "numeric",
+										month: "long",
+										day: "numeric",
+									})}
+								</time>
+								<span class="post-item__sep" aria-hidden="true">·</span>
+								<span>{post.data.author}</span>
+								<span class="post-item__sep" aria-hidden="true">·</span>
+								<span>{post.readingTime} min</span>
+							</div>
+							<p class="post-item__desc">{post.data.description}</p>
+						</article>
+					))}
+				</div>
+			</div>
+		</section>
+	</main>
+</Base>
+
+<style>
+	.blog-hero {
+		position: relative;
+		overflow: hidden;
+		padding: var(--space-9) 0 var(--space-7);
+	}
+	.blog-hero__inner {
+		position: relative;
+		z-index: 1;
+	}
+	.blog-hero__kicker {
+		margin-bottom: var(--space-4);
+	}
+	.blog-hero__title {
+		font-size: var(--type-h2);
+		line-height: var(--leading-tight);
+		margin-bottom: var(--space-5);
+		max-width: 20ch;
+	}
+	.blog-hero__lede {
+		font-family: var(--font-serif);
+		font-size: var(--type-lead);
+		line-height: var(--leading-body);
+		color: var(--text-quiet);
+		max-width: 56ch;
+		margin: 0;
+	}
+
+	.blog-list {
+		padding: var(--space-4) 0 var(--space-9);
+	}
+
+	.post-count-row {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-4);
+		margin: 0 0 var(--space-7);
+	}
+
+	.post-count {
+		font-size: var(--type-tiny);
+		color: var(--text-distant);
+		letter-spacing: 0.14em;
+		font-variant-numeric: tabular-nums;
+		margin: 0;
+	}
+
+	.post-count__feed {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: var(--type-tiny);
+		letter-spacing: 0.14em;
+		color: var(--text-distant);
+		border-bottom: none;
+		text-decoration: none;
+		transition: color var(--dur-quick) var(--ease-ink);
+	}
+	.post-count__feed:hover,
+	.post-count__feed:focus-visible {
+		color: var(--sage);
+	}
+
+	.post-list {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.post-item {
+		padding: var(--space-6) 0;
+		border-bottom: 1px solid var(--rule);
+	}
+
+	.post-item__title {
+		color: var(--washi);
+		border-bottom: none;
+		text-decoration: none;
+		display: block;
+		margin-bottom: var(--space-2);
+		transition: color var(--dur-ink) var(--ease-ink);
+	}
+	.post-item__title:hover {
+		color: var(--sage);
+	}
+	.post-item__title h3 {
+		font-size: var(--type-h3);
+		line-height: var(--leading-snug);
+		margin: 0;
+	}
+
+	.post-item__meta {
+		display: flex;
+		align-items: baseline;
+		gap: var(--space-2);
+		font-size: var(--type-tiny);
+		color: var(--text-distant);
+		letter-spacing: 0.14em;
+		margin-bottom: var(--space-3);
+	}
+
+	.post-item__sep {
+		color: var(--rule-strong);
+	}
+
+	.post-item__desc {
+		color: var(--text-quiet);
+		font-size: var(--type-small);
+		line-height: var(--leading-relaxed);
+		margin: 0;
+		max-width: 64ch;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+</style>

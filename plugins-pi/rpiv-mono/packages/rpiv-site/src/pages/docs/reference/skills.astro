@@ -1,0 +1,72 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+import { getAllSkills } from "../../../lib/skills";
+
+const skills = await getAllSkills();
+---
+
+<DocsLayout title="Skills Reference · rpiv-pi docs" description="Reference index of all rpiv-pi skills." docArticle={{ section: "reference" }}>
+	<article data-pagefind-body>
+		<h1 data-pagefind-meta="title">Skills Reference</h1>
+		<p class="docs-lede">All skills available in rpiv-pi, sorted alphabetically.</p>
+		<div class="ref-list">
+			{skills.map((skill) => (
+				<article class="ref-item">
+					<a href={`/docs/reference/skills/${skill.slug}`} class="ref-item__title">
+						<h3 class="mono">{skill.slug}</h3>
+					</a>
+					<p class="ref-item__desc">{skill.tagline}</p>
+				</article>
+			))}
+		</div>
+	</article>
+</DocsLayout>
+
+<style>
+	h1 {
+		font-size: var(--type-h2);
+		line-height: var(--leading-snug);
+		margin-bottom: var(--space-4);
+	}
+
+	/* .docs-lede lives in prose.css; this page only needs its index-specific
+	   extras (a touch more breathing room below the lede before the list). */
+	.docs-lede {
+		margin-bottom: var(--space-7);
+	}
+
+	.ref-list {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.ref-item {
+		padding: var(--space-5) 0;
+		border-bottom: 1px solid var(--rule);
+	}
+
+	.ref-item__title {
+		color: var(--washi);
+		border-bottom: none;
+		text-decoration: none;
+		display: block;
+		margin-bottom: var(--space-2);
+		transition: color var(--dur-ink) var(--ease-ink);
+	}
+	.ref-item__title:hover {
+		color: var(--sage);
+	}
+	.ref-item__title h3 {
+		font-size: var(--type-h3);
+		line-height: var(--leading-snug);
+		margin: 0;
+	}
+
+	.ref-item__desc {
+		color: var(--text-quiet);
+		font-size: var(--type-small);
+		line-height: var(--leading-relaxed);
+		margin: 0;
+		max-width: 64ch;
+	}
+</style>

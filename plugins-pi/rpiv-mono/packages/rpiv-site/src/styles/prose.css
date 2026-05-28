@@ -1,0 +1,214 @@
+/* Article typography for blog posts AND docs pages.
+   All values reference tokens.css custom properties.
+   .prose          → blog-leaning editorial scale (long-form reading)
+   .prose--docs    → tighter reference scale (scanning, not reading) */
+
+.prose {
+	font-family: var(--font-serif);
+	font-size: var(--type-base);
+	line-height: var(--leading-body);
+	color: var(--text);
+	max-width: 64ch;
+}
+
+/* Headings — mono to match site-wide heading convention */
+.prose h2,
+.prose h3,
+.prose h4 {
+	font-family: var(--font-mono);
+	font-weight: 400;
+	letter-spacing: -0.01em;
+	color: var(--washi);
+}
+
+.prose h2 {
+	margin-top: var(--space-8);
+	margin-bottom: var(--space-4);
+	font-size: var(--type-h2);
+	line-height: var(--leading-snug);
+}
+
+.prose h3 {
+	margin-top: var(--space-7);
+	margin-bottom: var(--space-3);
+	font-size: var(--type-h3);
+	line-height: var(--leading-snug);
+}
+
+.prose h4 {
+	margin-top: var(--space-6);
+	margin-bottom: var(--space-3);
+	font-size: var(--type-lead);
+	line-height: var(--leading-snug);
+}
+
+/* Paragraphs */
+.prose p {
+	margin-bottom: var(--space-5);
+}
+
+/* Links — sage with underline matching global a style */
+.prose a {
+	color: var(--sage);
+	border-bottom-color: var(--underline);
+}
+.prose a:hover {
+	color: var(--washi);
+	border-bottom-color: var(--underline-hover);
+}
+
+/* Lists */
+.prose ul,
+.prose ol {
+	margin-bottom: var(--space-5);
+	padding-left: var(--space-6);
+}
+.prose li {
+	margin-bottom: var(--space-2);
+	line-height: var(--leading-relaxed);
+}
+.prose li::marker {
+	color: var(--text-distant);
+}
+
+/* Blockquotes — sage-deep left border, quiet text */
+.prose blockquote {
+	border-left: 1px solid var(--sage-deep);
+	padding-left: var(--space-5);
+	margin: var(--space-6) 0;
+	color: var(--text-quiet);
+}
+
+/* Inline code — ink-raised background, mono */
+.prose code {
+	font-family: var(--font-mono);
+	font-size: var(--type-small);
+	background: var(--ink-raised);
+	padding: 2px 6px;
+	border-radius: var(--radius-xs);
+}
+
+/* Code inside pre — reset inline-code styling that leaks via .prose code */
+.prose pre code {
+	background: none;
+	padding: 0;
+	border-radius: 0;
+	font-size: inherit;
+}
+
+/* Code blocks — extends global pre styles */
+.prose pre {
+	margin-bottom: var(--space-5);
+}
+
+/* Images — fluid width, subtle radius */
+.prose img {
+	max-width: 100%;
+	height: auto;
+	border-radius: var(--radius-sm);
+	margin: var(--space-6) 0;
+}
+
+/* Horizontal rules — rule-strong, consistent with card borders */
+.prose hr {
+	border: none;
+	border-top: 1px solid var(--rule-strong);
+	margin: var(--space-7) 0;
+}
+
+/* Strong — washi for emphasis */
+.prose strong {
+	color: var(--washi);
+	font-weight: 600;
+}
+
+/* Emphasis — ochre tint for gentle highlight */
+.prose em {
+	font-style: italic;
+	color: var(--washi-soft);
+}
+
+/* Tables — minimal, rule borders.
+   Tables read as flow-content blocks (like <p>, <ul>) — they open with a
+   header underline + use row separators, but the LAST tbody row drops its
+   border-bottom. Otherwise the closing rule duplicates the next section's
+   border-top and produces parallel hairlines bracketing dead space. The
+   section's transition rule owns the boundary; tables just flow into it. */
+.prose table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: var(--space-5);
+	font-size: var(--type-small);
+}
+.prose th,
+.prose td {
+	border-bottom: 1px solid var(--rule);
+	padding: var(--space-3) var(--space-4);
+	text-align: left;
+}
+.prose tbody tr:last-child td {
+	border-bottom: none;
+}
+.prose th {
+	font-family: var(--font-mono);
+	color: var(--text-distant);
+	font-weight: 400;
+	font-size: var(--type-tiny);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   .prose--docs — docs-specific type scale
+   Reference content is scanned, not read. The blog .prose scale
+   centers h1=96px / h2=40px for editorial weight; docs cap h1 at
+   the landing's --type-h2 size (40px max) so both docs surfaces
+   feel like one publication, then step h2/h3 down to scan rhythm.
+   ─────────────────────────────────────────────────────────────── */
+.prose--docs h1 {
+	font-family: var(--font-mono);
+	font-weight: 400;
+	letter-spacing: -0.01em;
+	color: var(--washi);
+	font-size: var(--type-h2);
+	line-height: var(--leading-snug);
+	margin-bottom: var(--space-3);
+	max-width: 28ch;
+}
+.prose--docs h2 {
+	font-size: var(--type-h-docs-h2);
+	margin-top: var(--space-6);
+	margin-bottom: var(--space-3);
+}
+.prose--docs h3 {
+	font-size: var(--type-h-docs-h3);
+	margin-top: var(--space-5);
+	margin-bottom: var(--space-2);
+}
+.prose--docs h4 {
+	font-size: var(--type-base);
+	margin-top: var(--space-4);
+	margin-bottom: var(--space-2);
+}
+
+/* Kicker labels the h2 that follows it — they're one typographic unit, not
+   two stanzas. Without this, `.prose p` margin-bottom (24px) collapses with
+   h2 margin-top (32px) to 32px, the same gap as between paragraphs. Tighten
+   to 8px so the kicker reads as the h2's eyebrow. */
+.prose--docs .kicker + h2 {
+	margin-top: var(--space-2);
+}
+
+/* Page-level lede paragraph (sits under the docs h1, above any meta strip).
+   Single source of truth so the four detail/index pages stop drifting on
+   line-height (snug vs relaxed vs default) and margin-bottom (5 vs 6 vs 7).
+   --leading-snug fits short taglines AND short intro sentences; pages can
+   still override locally if a future lede needs --leading-relaxed. */
+.docs-lede {
+	color: var(--text-quiet);
+	font-family: var(--font-serif);
+	font-size: var(--type-lead);
+	line-height: var(--leading-snug);
+	max-width: 56ch;
+	margin-bottom: var(--space-6);
+}

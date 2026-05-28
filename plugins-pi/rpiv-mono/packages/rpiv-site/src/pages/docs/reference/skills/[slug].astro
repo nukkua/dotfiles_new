@@ -1,0 +1,342 @@
+---
+import type { GetStaticPaths } from "astro";
+import { getCollection, render } from "astro:content";
+import DocsLayout from "../../../../layouts/DocsLayout.astro";
+import { inlineMd } from "../../../../lib/inlineMd";
+import { getSkill, getSkillSpec } from "../../../../lib/skills";
+
+export const getStaticPaths: GetStaticPaths = async () => {
+	const specs = await getCollection("skillSpecs");
+	return specs.map((spec) => ({
+		params: { slug: spec.data.name },
+		props: { name: spec.data.name },
+	}));
+};
+
+const { name } = Astro.props;
+const skill = await getSkill(name);
+
+// Structured docs page if any of the new frontmatter is populated.
+// Otherwise fall back to rendering the SKILL.md spec body (legacy, un-migrated).
+const hasStructured = Boolean(
+	skill.copy?.purpose ||
+		skill.copy?.when_to_use?.length ||
+		skill.copy?.inputs?.length ||
+		skill.copy?.outputs?.length ||
+		skill.copy?.key_steps?.length,
+);
+
+const specEntry = await getSkillSpec(name);
+const { Content: SpecContent, headings: specHeadings } = await render(specEntry);
+
+// Build headings list for the in-page TOC when rendering structured content.
+const structuredHeadings = hasStructured
+	? [
+			skill.copy?.purpose && { depth: 2, slug: "purpose", text: "Purpose" },
+			skill.copy?.when_to_use?.length && { depth: 2, slug: "when-to-use", text: "When to use it" },
+			skill.copy?.inputs?.length && { depth: 2, slug: "inputs", text: "Inputs" },
+			skill.copy?.outputs?.length && { depth: 2, slug: "outputs", text: "Outputs" },
+			skill.copy?.key_steps?.length && { depth: 2, slug: "key-steps", text: "Key steps" },
+			(skill.copy?.related?.upstream?.length || skill.copy?.related?.downstream?.length) && {
+				depth: 2,
+				slug: "related-skills",
+				text: "Related skills",
+			},
+		].filter(Boolean)
+	: specHeadings;
+---
+
+<DocsLayout
+	title={`${skill.slug} · rpiv-pi docs`}
+	description={skill.tagline}
+	headings={structuredHeadings as never}
+	docArticle={{ section: "reference" }}
+>
+	<article class="prose prose--docs" data-pagefind-body>
+		<p class="kicker">§ reference · skill</p>
+		<h1 data-pagefind-meta="title" class="mono">{skill.slug}</h1>
+		<p class="docs-lede">{skill.tagline}</p>
+		{skill.data["argument-hint"] && (
+			<div class="ref-meta">
+				<span class="ref-meta__label mono">arguments</span>
+				<span class="chip chip--sage">
+					{Array.isArray(skill.data["argument-hint"])
+						? skill.data["argument-hint"].join(" · ")
+						: skill.data["argument-hint"]}
+				</span>
+			</div>
+		)}
+
+		{hasStructured ? (
+			<>
+				{skill.copy?.purpose && (
+					<section class="ref-section">
+						<p class="kicker">§ 01 · purpose</p>
+						<h2 id="purpose">Purpose</h2>
+						<p set:html={inlineMd(skill.copy?.purpose)} />
+					</section>
+				)}
+
+				{skill.copy?.when_to_use && skill.copy.when_to_use.length > 0 && (
+					<section class="ref-section">
+						<p class="kicker">§ 02 · when to use</p>
+						<h2 id="when-to-use">When to use it</h2>
+						<ul>
+							{skill.copy?.when_to_use.map((item) => (
+								<li set:html={inlineMd(item)} />
+							))}
+						</ul>
+					</section>
+				)}
+
+				{skill.copy?.inputs && skill.copy.inputs.length > 0 && (
+					<section class="ref-section">
+						<p class="kicker">§ 03 · inputs</p>
+						<h2 id="inputs">Inputs</h2>
+						<table>
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Required</th>
+									<th>Source</th>
+								</tr>
+							</thead>
+							<tbody>
+								{skill.copy?.inputs.map((input) => (
+									<tr>
+										<td><code>{input.name}</code></td>
+										<td>{input.required ? "yes" : "no"}</td>
+										<td set:html={input.source ? inlineMd(input.source) : "—"} />
+									</tr>
+								))}
+							</tbody>
+						</table>
+						{skill.copy?.inputs.some((i) => i.notes) && (
+							<dl class="input-notes">
+								{skill.copy?.inputs.filter((i) => i.notes).map((input) => (
+									<>
+										<dt class="mono">{input.name}</dt>
+										<dd set:html={inlineMd(input.notes)} />
+									</>
+								))}
+							</dl>
+						)}
+					</section>
+				)}
+
+				{skill.copy?.outputs && skill.copy.outputs.length > 0 && (
+					<section class="ref-section">
+						<p class="kicker">§ 04 · outputs</p>
+						<h2 id="outputs">Outputs</h2>
+						<table>
+							<thead>
+								<tr>
+									<th>Artifact</th>
+									<th>Path</th>
+									<th>Format</th>
+								</tr>
+							</thead>
+							<tbody>
+								{skill.copy?.outputs.map((output) => (
+									<tr>
+										<td set:html={inlineMd(output.artifact)} />
+										<td>{output.path ? <code>{output.path}</code> : "—"}</td>
+										<td set:html={output.format ? inlineMd(output.format) : "—"} />
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</section>
+				)}
+
+				{skill.copy?.key_steps && skill.copy.key_steps.length > 0 && (
+					<section class="ref-section">
+						<p class="kicker">§ 05 · key steps</p>
+						<h2 id="key-steps">Key steps</h2>
+						<ol class="key-steps">
+							{skill.copy?.key_steps.map((step, i) => (
+								<li class="key-step">
+									<span class="key-step__num mono" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+									<span class="key-step__rule" aria-hidden="true"></span>
+									<span class="key-step__body">
+										<strong class="key-step__title" set:html={inlineMd(step.title)} />
+										<em class="key-step__rationale" set:html={"Why: " + inlineMd(step.rationale)} />
+									</span>
+								</li>
+							))}
+						</ol>
+					</section>
+				)}
+
+				{((skill.copy?.related?.upstream?.length ?? 0) > 0 || (skill.copy?.related?.downstream?.length ?? 0) > 0) && (
+					<section class="ref-section">
+						<p class="kicker">§ 06 · related skills</p>
+						<h2 id="related-skills">Related skills</h2>
+						{(skill.copy?.related?.upstream?.length ?? 0) > 0 && (
+							<div class="rel-row">
+								<span class="rel-label mono">upstream</span>
+								<span class="rel-arrow" aria-hidden="true">→</span>
+								<span class="rel-chips">
+									{skill.copy?.related.upstream.map((s) => (
+										<a href={`/docs/reference/skills/${s}/`} class="chip chip--sage">{s}</a>
+									))}
+								</span>
+							</div>
+						)}
+						{(skill.copy?.related?.downstream?.length ?? 0) > 0 && (
+							<div class="rel-row">
+								<span class="rel-label mono">downstream</span>
+								<span class="rel-arrow" aria-hidden="true">→</span>
+								<span class="rel-chips">
+									{skill.copy?.related.downstream.map((s) => (
+										<a href={`/docs/reference/skills/${s}/`} class="chip chip--sage">{s}</a>
+									))}
+								</span>
+							</div>
+						)}
+					</section>
+				)}
+
+			</>
+		) : (
+			<SpecContent />
+		)}
+	</article>
+</DocsLayout>
+
+<style>
+	/* ─── Header block ───
+	   .docs-lede lives in src/styles/prose.css — shared across every docs
+	   detail/index page. No local override needed here.
+	   .ref-meta + .ref-section rhythm lives in src/styles/global.css —
+	   shared across this page + agents/[slug].astro. */
+
+	/* ─── Input notes — definition list below the table ─── */
+	.input-notes {
+		margin: var(--space-4) 0 0;
+		padding-top: var(--space-3);
+		border-top: 1px solid var(--rule);
+	}
+	.input-notes dt {
+		font-size: var(--type-tiny);
+		letter-spacing: 0.04em;
+		color: var(--text-distant);
+		margin-bottom: var(--space-1);
+	}
+	.input-notes dt code {
+		color: var(--sage);
+		background: transparent;
+	}
+	.input-notes dd {
+		margin: 0 0 var(--space-3);
+		font-family: var(--font-serif);
+		font-size: var(--type-small);
+		color: var(--text-quiet);
+		line-height: var(--leading-snug);
+		max-width: 56ch;
+	}
+	.input-notes dd:last-child {
+		margin-bottom: 0;
+	}
+
+	/* ─── Key steps — numbered with mono numerals + sage rule ─── */
+	.key-steps {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	/* No inter-step hairline. The vertical sage rule (.key-step__rule) ties
+	   number → body within each step, and the bold mono ordinal (01 / 02 / …)
+	   carries the between-step separation. Hairlines here would turn the
+	   editorial step list into a SaaS data-row grid — against the
+	   "magazine spread, not dashboard" tone in DESIGN.md.
+
+	   Padding is uniform on every step (16px top + 16px bottom = 32px between
+	   steps). Without a hairline anchoring the gap, anything larger reads as
+	   drift — the sage vertical rule fragments and the steps stop feeling
+	   like one continuous list. The transition ramp is:
+	     h2 → first step:    12 (h2 margin-bottom) + 16 (step padding-top)  = 28px
+	     between steps:       16 + 16                                          = 32px
+	     last step → section: 16 (step padding-bottom) + 32 (next section pt) = 48px
+	   Each transition opens slightly wider as we move outward, which reads
+	   as intentional editorial rhythm. */
+	.key-step {
+		display: grid;
+		grid-template-columns: auto 1px 1fr;
+		gap: var(--space-3);
+		align-items: start;
+		padding: var(--space-4) 0;
+		/* .prose li adds an 8px margin-bottom that would inflate every gap and
+		   misalign the rhythm. Zero it here — the parent .key-steps owns the
+		   layout entirely. */
+		margin-bottom: 0;
+	}
+	.key-step__num {
+		font-size: var(--type-tiny);
+		letter-spacing: 0.18em;
+		color: var(--text-distant);
+		padding-top: 2px;
+		min-width: 2em;
+	}
+	.key-step__rule {
+		display: block;
+		width: 1px;
+		background: var(--sage-deep);
+		align-self: stretch;
+		opacity: 0.55;
+	}
+	.key-step__body {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		min-width: 0;
+	}
+	.key-step__title {
+		color: var(--washi);
+		font-weight: 400;
+	}
+	.key-step__rationale {
+		font-family: var(--font-serif);
+		font-style: italic;
+		color: var(--text-quiet);
+		font-size: var(--type-small);
+		line-height: var(--leading-snug);
+	}
+
+	/* ─── Related skills — chip rails with arrow connectors ─── */
+	.rel-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		margin-bottom: var(--space-4);
+		flex-wrap: wrap;
+	}
+	.rel-label {
+		font-size: var(--type-tiny);
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--text-distant);
+		min-width: 6.5rem;
+	}
+	.rel-arrow {
+		color: var(--sage);
+		font-family: var(--font-mono);
+	}
+	.rel-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+	/* Chips inside .rel-chips need link behavior — override global .chip
+	   which doesn't carry sage underline by default. */
+	.rel-chips a.chip {
+		border-bottom-color: var(--sage-deep);
+		transition:
+			color var(--dur-quick) var(--ease-ink),
+			border-color var(--dur-quick) var(--ease-ink);
+	}
+	.rel-chips a.chip:hover {
+		color: var(--washi);
+		border-bottom-color: var(--sage);
+	}
+</style>

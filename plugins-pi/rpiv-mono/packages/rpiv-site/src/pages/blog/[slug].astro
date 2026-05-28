@@ -1,0 +1,106 @@
+---
+import type { GetStaticPaths } from "astro";
+import { render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import Nav from "../../components/Nav.astro";
+import { computeReadingTime, getPublishedPosts } from "../../lib/posts";
+import "../../styles/prose.css";
+
+export const getStaticPaths: GetStaticPaths = async () => {
+	const posts = await getPublishedPosts();
+	return posts.map((entry) => ({
+		params: { slug: entry.id },
+		props: { entry, readingTime: computeReadingTime(entry.body ?? "") },
+	}));
+};
+
+const { entry, readingTime } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<Base
+	title={`${entry.data.title} · rpiv-pi`}
+	description={entry.data.description}
+	article={{
+		datePublished: entry.data.pubDate.toISOString(),
+		dateModified: entry.data.updatedDate?.toISOString(),
+		author: entry.data.author,
+	}}
+>
+	<Nav />
+	<main>
+		<section>
+			<div class="container">
+				<a href="/blog" class="back-link mono">← back to blog</a>
+				<p class="post-meta mono">
+					<time datetime={entry.data.pubDate.toISOString()}>
+						{entry.data.pubDate.toLocaleDateString("en-US", {
+							year: "numeric",
+							month: "long",
+							day: "numeric",
+						})}
+					</time>
+					<span class="post-meta__sep" aria-hidden="true">·</span>
+					<span>{entry.data.author}</span>
+					<span class="post-meta__sep" aria-hidden="true">·</span>
+					<span>{readingTime} min</span>
+				</p>
+				<h1 class="post-title">{entry.data.title}</h1>
+				{entry.data.tags.length > 0 && (
+					<div class="post-tags">
+						{entry.data.tags.map((tag) => (
+							<span class="chip chip--muted">{tag}</span>
+						))}
+					</div>
+				)}
+				<article class="prose">
+					<Content />
+				</article>
+			</div>
+		</section>
+	</main>
+</Base>
+
+<style>
+	.back-link {
+		display: inline-block;
+		font-size: var(--type-tiny);
+		letter-spacing: 0.14em;
+		color: var(--text-distant);
+		border-bottom: none;
+		text-decoration: none;
+		margin-bottom: var(--space-7);
+		transition: color var(--dur-ink) var(--ease-ink);
+	}
+	.back-link:hover {
+		color: var(--sage);
+	}
+
+	.post-meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-2);
+		font-size: var(--type-tiny);
+		letter-spacing: 0.14em;
+		color: var(--text-distant);
+		margin-bottom: var(--space-4);
+	}
+
+	.post-meta__sep {
+		color: var(--rule-strong);
+	}
+
+	.post-title {
+		font-size: var(--type-h2);
+		line-height: var(--leading-snug);
+		margin-bottom: var(--space-5);
+	}
+
+	.post-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-bottom: var(--space-7);
+	}
+</style>
