@@ -1,12 +1,12 @@
-#!/usr/bin/env fish
+#!/usr/bin/env bash
 
-set SCRIPTS_DIR ~/scripts/personal
+SCRIPTS_DIR="$HOME/scripts/personal"
 
-set selected (
-    find $SCRIPTS_DIR -maxdepth 1 -type f |
-    while read -l file
-        echo (basename $file)
-    end |
+selected=$(
+    find "$SCRIPTS_DIR" -maxdepth 1 -type f |
+    while IFS= read -r file; do
+        basename "$file"
+    done |
     fzf \
         --height=100% \
         --layout=reverse \
@@ -16,8 +16,8 @@ set selected (
         --preview-window=right:60%
 )
 
-if test -n "$selected"
+if [[ -n "$selected" ]]; then
     clear
     chmod +x "$SCRIPTS_DIR/$selected"
     "$SCRIPTS_DIR/$selected"
-end
+fi

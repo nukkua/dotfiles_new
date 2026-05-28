@@ -1,24 +1,25 @@
-#!/usr/bin/env fish
+#!/usr/bin/env bash
 
-set -l search_dirs \
-    ~/Downloads \
-    ~/books
+search_dirs=(
+    "$HOME/Downloads"
+    "$HOME/books"
+)
 
-set -l valid_dirs
+valid_dirs=()
 
-for dir in $search_dirs
-    if test -d "$dir"
-        set valid_dirs $valid_dirs "$dir"
-    end
-end
+for dir in "${search_dirs[@]}"; do
+    if [[ -d "$dir" ]]; then
+        valid_dirs+=("$dir")
+    fi
+done
 
-if test (count $valid_dirs) -eq 0
+if [[ ${#valid_dirs[@]} -eq 0 ]]; then
     echo "No hay directorios válidos."
     exit 1
-end
+fi
 
-set -l selected_pdf (
-    find $valid_dirs -type f -iname "*.pdf" 2>/dev/null \
+selected_pdf=$(
+    find "${valid_dirs[@]}" -type f -iname "*.pdf" 2>/dev/null \
     | sort \
     | fzf \
         --height=50% \
@@ -27,6 +28,6 @@ set -l selected_pdf (
         --prompt=" > "
 )
 
-if test -n "$selected_pdf"
+if [[ -n "$selected_pdf" ]]; then
     nohup setsid sh -c 'zathura "$1" >/dev/null 2>&1 &' sh "$selected_pdf"
-end
+fi

@@ -4,8 +4,8 @@
 #   2) compile– compila/ejecuta con Zig
 #   3) term   – shell normal en el mismo path
 
-SESH="admin"
-WORKDIR="/home/nukkua/working/klubo-admin-v2/"
+SESH="checkco"
+WORKDIR="/home/nukkua/projects/checkco"
 
 if ! tmux has-session -t "=$SESH" 2>/dev/null; then
     # Ventana 1: vim
@@ -17,7 +17,7 @@ if ! tmux has-session -t "=$SESH" 2>/dev/null; then
     tmux new-window   -t "$SESH" -n sv
     tmux send-keys    -t "$SESH:sv" "cd $WORKDIR"     C-m
     tmux send-keys    -t "$SESH:sv" "clear"     C-m
-    tmux send-keys    -t "$SESH:sv" "npm run dev:dev -- -p 9000"     C-m
+    tmux send-keys    -t "$SESH:sv" "make run"     C-m
 
     # Ventana 3: git
     tmux new-window   -t "$SESH" -n lazygit
@@ -28,6 +28,7 @@ if ! tmux has-session -t "=$SESH" 2>/dev/null; then
     tmux new-window   -t "$SESH" -n pancakes
     tmux send-keys    -t "$SESH:pancakes" "cd $WORKDIR"        C-m
     tmux send-keys    -t "$SESH:pancakes" "clear"        C-m
+    tmux send-keys    -t "$SESH:pancakes" "pi"        C-m
 
     # Sitúate en la primera ventana
     tmux select-window -t "$SESH:nvim"
