@@ -2,31 +2,47 @@
 vim.cmd.colorscheme("quiet")
 vim.opt.background = 'dark'
 
+
 -- vim ui2
 require('vim._core.ui2').enable({})
 
 -- Config
 vim.opt.lazyredraw = true
 vim.opt.synmaxcol = 200
+vim.opt.inccommand = "split"
+vim.opt.isfname:append("@-@")
 
 vim.loader.enable()
 vim.opt.mouse         = ""
 vim.wo.signcolumn     = 'no'
 vim.opt.guicursor     = "n-v-sm:block"
+vim.opt.laststatus    = 3
 vim.g.netrw_banner    = 0
 vim.g.netrw_winsize   = 25
 vim.o.shada           = [[!,'20,<50,s10,h]]
 vim.opt.termguicolors = true
 vim.g.mapleader       = " "
+vim.opt.ignorecase    = true
+vim.opt.smartcase     = true
+vim.opt.swapfile      = false
+vim.opt.backup        = false
+vim.o.cmdheight       = 0
 
 vim.g.zig_executable  = "/home/leverna/zig/"
+
+vim.api.nvim_create_autocmd("TextYankPost", {
+    desc = "Highlight when yanking (copying text)",
+    callback = function()
+        vim.hl.on_yank({timeout = 55})
+    end,
+})
 
 -- pack
 vim.pack.add({
     { src = "https://github.com/j-hui/fidget.nvim" },
     { src = "https://github.com/AndrewRadev/tagalong.vim" },
     { src = "https://github.com/stevearc/oil.nvim" },
-    { src = "https://github.com/ThePrimeagen/harpoon", version = "harpoon2" },
+    { src = "https://github.com/ThePrimeagen/harpoon",                       version = "harpoon2" },
     { src = "https://github.com/nvim-lua/plenary.nvim" },
     { src = "https://github.com/xeluxee/competitest.nvim" },
     { src = "https://github.com/MunifTanjim/nui.nvim" },
@@ -167,7 +183,7 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
-vim.keymap.set("n", "<leader>tt", function()
+vim.keymap.set("n", "<leader>cp", function()
     local word = vim.fn.expand("<cword>")
     local ft = vim.bo.filetype
 
@@ -175,6 +191,7 @@ vim.keymap.set("n", "<leader>tt", function()
         javascript = "console.log('%s:', %s);",
         typescript = "console.log('%s:', %s);",
         astro = "console.log('%s:', %s);",
+        vue = "console.log('%s:', %s);",
         python = "print('%s:', %s)",
         lua = "print('%s:', %s)",
         rust = "println!(\"%s: {:?}\", %s);",
@@ -211,8 +228,9 @@ vim.keymap.set("n", "N", "Nzzzv")
 vim.keymap.set("n", "<C-d>", "<C-d>zz")
 vim.keymap.set("n", "<C-u>", "<C-u>zz")
 vim.keymap.set('n', '<leader>s', ':e #<CR>')
-vim.keymap.set("n", "<leader>tn", "<C-w>j", { desc = "Go to next tab" })
-vim.keymap.set("n", "<leader>ts", "<C-w>k", { desc = "Go to previous tab" })                        --  go to previous tab
+vim.keymap.set('n', '<C-j>s', '<cmd>cprev<CR>')
+vim.keymap.set('n', '<C-j>n', '<cmd>cnext<CR>')
+vim.keymap.set("n", "<leader>tt", ":term <CR>")
 vim.keymap.set("n", "<leader>tf", "<cmd>tabnew %<CR>", { desc = "Open current buffer in new tab" }) --  move current buffer to new tab
 
 vim.keymap.set("n", "-", "<CMD>Oil<CR>")
@@ -252,15 +270,26 @@ vim.keymap.set(
 )
 
 
-vim.api.nvim_set_keymap('n', '<Space>j', "<CMD>noh<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<C-c>', ":nohl<CR>", { noremap = true, silent = true })
 vim.keymap.set('n', '<Space>u', function()
     vim.cmd.packadd("nvim.undotree")
     require("undotree").open()
 end, { desc = "Toggle builtin undotree" })
 
 vim.api.nvim_set_keymap('n', '<Space>r', ":edit!<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<Space>cc', ':Commentary<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('v', '<Space>cc', ':Commentary<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<Space>ca', ':Commentary<CR>', { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>ct", function()
+    vim.cmd("silent make")
+    vim.cmd("cwindow")
+end)
+
+vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "moves lines down in visual selection" })
+vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "moves lines up in visual selection" })
+
+vim.keymap.set("v", "<", "<gv", { desc = "Unindent and keep selection" })
+vim.keymap.set("v", ">", ">gv", { desc = "Indent and keep selection" })
+
+vim.keymap.set("n", "J", "mzJ`z", { desc = "Join lines without moving cursor" })
 
 vim.keymap.set('n', 'n', 'nzz', { silent = true })
 vim.keymap.set('n', 'N', 'Nzz', { silent = true })
@@ -347,6 +376,7 @@ require("mason-lspconfig").setup({
         "astro",
         "svelte",
         "tailwindcss",
+        "gopls",
     },
     automatic_enable = false,
 })
@@ -410,6 +440,9 @@ vim.lsp.config("astro", {
     capabilities = capabilities,
 })
 
+vim.lsp.config("gopls", {
+    capabilities = capabilities,
+})
 vim.lsp.config("svelte", {
     capabilities = capabilities,
 })
@@ -480,6 +513,13 @@ vim.api.nvim_create_autocmd("FileType", {
     pattern = "astro",
     callback = function()
         vim.lsp.enable("astro")
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "go",
+    callback = function()
+        vim.lsp.enable("gopls")
     end,
 })
 
@@ -626,23 +666,7 @@ vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter", "VimEnter" }, {
     end,
 })
 
-vim.api.nvim_create_user_command("JsonToTs", function()
-    local name = vim.fn.input("Type name: ")
-    if name == "" then name = "Root" end
-
-    local cmd = "xclip -selection clipboard -o | quicktype --lang ts --top-level " .. vim.fn.shellescape(name)
-    local output = vim.fn.systemlist(cmd)
-
-    if vim.v.shell_error ~= 0 then
-        vim.notify(table.concat(output, "\n"), vim.log.levels.ERROR)
-        return
-    end
-
-    vim.api.nvim_put(output, "l", true, true)
-end, {})
-
 require("intro");
-require("lsp_idle").setup()
 local disabled_built_ins = {
     "gzip",
     "zip",
@@ -662,3 +686,66 @@ local disabled_built_ins = {
 for _, plugin in pairs(disabled_built_ins) do
     vim.g["loaded_" .. plugin] = 1
 end
+
+-- cli compiler
+local augroup = vim.api.nvim_create_augroup("MakeSettings", {})
+
+vim.api.nvim_create_autocmd("FileType", {
+    group = augroup,
+    pattern = "rust",
+    callback = function()
+        vim.cmd("compiler cargo")
+        vim.opt_local.makeprg =
+        "cargo check --message-format short"
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    group = augroup,
+    pattern = { "c", "cpp" },
+    callback = function()
+        vim.cmd("compiler gcc")
+        vim.opt_local.makeprg =
+        "g++ -std=c++20 -Wall -Wextra % -o %<"
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    group = augroup,
+    pattern = {
+        "javascript",
+        "typescript",
+        "vue",
+    },
+    callback = function()
+        local root = vim.fs.root(0, {
+            "quasar.config.ts",
+            "quasar.config.js",
+        })
+
+        if root then
+            vim.opt_local.makeprg = "npx eslint %"
+        end
+    end,
+})
+
+local last_ctrl_c = 0
+local double_tap_ms = 300
+
+function _G.smart_ctrl_c()
+  local now = vim.loop.now()
+
+  if now - last_ctrl_c < double_tap_ms then
+    vim.api.nvim_chan_send(vim.b.terminal_job_id, "\003")
+  else
+    vim.api.nvim_feedkeys(
+      vim.api.nvim_replace_termcodes('<C-\\><C-n>', true, false, true),
+      'n',
+      false
+    )
+  end
+
+  last_ctrl_c = now
+end
+
+vim.keymap.set('t', '<C-c>', _G.smart_ctrl_c)
