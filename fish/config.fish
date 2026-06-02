@@ -1,21 +1,12 @@
 # ~/.config/fish/config.fish
 
+# Sakura color for invalid commands
+set -g fish_color_error ffb6c1
+
 # Aliases
-alias ls='ls --color=auto'
 set -x LS_COLORS 'di=1;38;5;218:fi=0'
-
-alias grep='grep --color=auto'
-alias recon-ng='/home/leverna/packages/recon-ng/recon-ng'
 alias vim='nvim'
-alias wmqttx='nohup flatpak run com.emqx.MQTTX &> /dev/null &'
-alias sortty='python3 /usr/local/bin/sortty-bin/sortty.py'
-alias php82='/usr/local/php82/bin/php'
-alias fman='commandline -f insert-command; compgen -c | fzf | xargs man'
 
-alias beef='/home/leverna/packages/beef-master/beef'
-
-
-# PATHs
 set -Ux PATH $PATH /usr/bin $HOME/.cargo/bin $HOME/.local/bin $HOME/flutter/flutter/bin $HOME/.config/composer/vendor/bin $HOME/go/bin /opt/cuda/bin $HOME/RegRipper3.0
 
 if test -d "$HOME/flutter/flutter/bin"
@@ -26,36 +17,32 @@ end
 set -x CARGO_HOME $HOME/.cargo
 set -x PATH $CARGO_HOME/bin $PATH
 
-# CUDA
-set -x LD_LIBRARY_PATH /opt/cuda/lib64 $LD_LIBRARY_PATH
-
-set -x ANDROID_HOME "$HOME/Android/Sdk"
-set -x ANDROID_SDK_ROOT "$HOME/Android/Sdk"
-
-# bun
-set -x BUN_INSTALL "$HOME/.bun"
-set -x PATH $BUN_INSTALL/bin $PATH
-
 # zoxide
 zoxide init fish | source
-# fzf
 fzf --fish | source
-
-
-# editor
 set -x FCEDIT nvim
 set -x EDITOR nvim
 set -x VISUAL nvim
 
-# LLDB
 set -x LLDB_USE_NATIVE_PDB_READER "yes"
 abbr --add zbr zig build run
 abbr --add zz z ..
 
-
-
-# uv
 fish_add_path "/home/nukkua/.local/bin"
+stty -ixon
 
-# opencode
-fish_add_path /home/nukkua/.opencode/bin
+set -g fish_cursor_default block
+set -g fish_cursor_insert block
+set -g fish_cursor_replace_one block
+set -g fish_cursor_replace block
+set -g fish_cursor_visual block
+
+function fish_user_key_bindings
+    fish_vi_key_bindings
+
+    bind -M insert \cs accept-autosuggestion
+    bind \cg '~/scripts/personal/sx'
+
+    bind -M insert \cc 'set fish_bind_mode default; commandline -f repaint'
+    bind -M default \cc 'commandline -f cancel-commandline'
+end
