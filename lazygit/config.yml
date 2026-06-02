@@ -1,0 +1,100 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/jesseduffield/lazygit/master/schema/config.json
+# Sakura for Lazygit. Source: ~/.pi/agent/themes/sakura.json
+
+# Palette
+# sakura      #ffb6c1
+# sakuraSoft  #f2a7b5
+# sakuraDim   #d38a98
+# ink         #cdd0d8
+# surface     #1e1e2e
+# surfaceSoft #242436
+# matcha      #a6d189
+# ume         #e78284
+# kintsugi    #e5c890
+# fuji        #8caaee
+# murasaki    #ca9ee6
+# aqua        #99d1db
+
+gui:
+  border: rounded
+  nerdFontsVersion: "3"
+
+  theme:
+    activeBorderColor:
+      - '#ffb6c1'
+      - bold
+    inactiveBorderColor:
+      - '#808080'
+    searchingActiveBorderColor:
+      - '#99d1db'
+      - bold
+    optionsTextColor:
+      - '#ffb6c1'
+    selectedLineBgColor:
+      - '#242436'
+    inactiveViewSelectedLineBgColor:
+      - '#1e1e2e'
+    cherryPickedCommitFgColor:
+      - '#8caaee'
+      - bold
+    cherryPickedCommitBgColor:
+      - '#1e2a24'
+    markedBaseCommitFgColor:
+      - '#1e1e2e'
+      - bold
+    markedBaseCommitBgColor:
+      - '#e5c890'
+    unstagedChangesColor:
+      - '#e78284'
+    defaultFgColor:
+      - '#cdd0d8'
+
+  authorColors:
+    '*': '#d38a98'
+
+  branchColorPatterns:
+    '^main$': '#ffb6c1'
+    '^master$': '#ffb6c1'
+    '^feat/': '#a6d189'
+    '^feature/': '#a6d189'
+    '^fix/': '#e78284'
+    '^bug/': '#e78284'
+    '^hotfix/': '#e78284'
+    '^docs/': '#8caaee'
+    '^chore/': '#ca9ee6'
+    '^refactor/': '#99d1db'
+    '.*': '#d38a98'
+
+  customIcons:
+    filenames:
+      "README.md": { icon: "󰂺", color: "#ffb6c1" }
+      "LICENSE": { icon: "󰿃", color: "#e5c890" }
+      "package.json": { icon: "", color: "#a6d189" }
+      "Cargo.toml": { icon: "󱘗", color: "#d38a98" }
+      "go.mod": { icon: "", color: "#99d1db" }
+      "Dockerfile": { icon: "󰡨", color: "#8caaee" }
+    extensions:
+      ".md": { icon: "", color: "#ffb6c1" }
+      ".json": { icon: "", color: "#e5c890" }
+      ".yml": { icon: "", color: "#ca9ee6" }
+      ".yaml": { icon: "", color: "#ca9ee6" }
+      ".js": { icon: "", color: "#e5c890" }
+      ".ts": { icon: "", color: "#8caaee" }
+      ".tsx": { icon: "", color: "#99d1db" }
+      ".rs": { icon: "", color: "#d38a98" }
+      ".go": { icon: "", color: "#99d1db" }
+      ".py": { icon: "", color: "#a6d189" }
+      ".sh": { icon: "", color: "#ffb6c1" }
+      ".css": { icon: "", color: "#8caaee" }
+      ".html": { icon: "", color: "#e78284" }
+
+keybinding:
+  universal:
+    quit: q
+    return: [<esc>, <ctrl+c>]
+
+git:
+  # Sakura-colored git logs in main pane.
+  branchLogCmd: "git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=format:'%C(#d38a98)%h%Creset %C(#ffb6c1)%d%Creset %C(#cdd0d8)%s%Creset %C(#808080)- %an %ar%Creset' {{branchName}} --"
+  allBranchesLogCmds:
+    - "git log --graph --all --color=always --abbrev-commit --decorate --date=relative --pretty=format:'%C(#d38a98)%h%Creset %C(#ffb6c1)%d%Creset %C(#cdd0d8)%s%Creset %C(#808080)- %an %ar%Creset'"
