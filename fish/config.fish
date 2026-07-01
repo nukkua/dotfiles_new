@@ -6,6 +6,8 @@ set -g fish_color_error ffb6c1
 # Aliases
 set -x LS_COLORS 'di=1;38;5;218:fi=0'
 alias vim='nvim'
+alias p='pi'
+alias kbdtoggle="$HOME/scripts/disable-laptop-keyboard.sh"
 
 set -Ux PATH $PATH /usr/bin $HOME/.cargo/bin $HOME/.local/bin $HOME/flutter/flutter/bin $HOME/.config/composer/vendor/bin $HOME/go/bin /opt/cuda/bin $HOME/RegRipper3.0
 

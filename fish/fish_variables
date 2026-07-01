@@ -1,8 +1,9 @@
 # This file contains fish universal variable definitions.
 # VERSION: 3.0
-SETUVAR --export --path PATH:/home/nukkua/scripts/personal\x1e/home/nukkua/\x2eopencode/bin\x1e/home/nukkua/\x2elocal/bin\x1e/home/leverna/\x2elocal/bin\x1e/home/nukkua/\x2ecargo/bin\x1e/home/nukkua/\x2ecargo/bin\x1e/usr/local/sbin\x1e/usr/local/bin\x1e/usr/bin\x1e/usr/bin/site_perl\x1e/usr/bin/vendor_perl\x1e/usr/bin/core_perl\x1e/usr/bin\x1e/home/nukkua/\x2ecargo/bin\x1e/home/nukkua/\x2elocal/bin\x1e/home/nukkua/flutter/flutter/bin\x1e/home/nukkua/\x2econfig/composer/vendor/bin\x1e/home/nukkua/go/bin\x1e/opt/cuda/bin\x1e/home/nukkua/RegRipper3\x2e0
+SETUVAR --export --path PATH:/home/nukkua/\x2elocal/share/pnpm/bin\x1e/home/nukkua/\x2elocal/share/pnpm\x1e/home/nukkua/scripts/personal\x1e/home/nukkua/\x2eopencode/bin\x1e/home/nukkua/\x2elocal/bin\x1e/home/leverna/\x2elocal/bin\x1e/home/nukkua/\x2ebun/bin\x1e/home/nukkua/\x2ecargo/bin\x1e/home/nukkua/\x2ecargo/bin\x1e/usr/local/sbin\x1e/usr/local/bin\x1e/usr/bin\x1e/usr/lib/jvm/default/bin\x1e/usr/bin/site_perl\x1e/usr/bin/vendor_perl\x1e/usr/bin/core_perl\x1e/usr/bin\x1e/home/nukkua/\x2ecargo/bin\x1e/home/nukkua/\x2elocal/bin\x1e/home/nukkua/flutter/flutter/bin\x1e/home/nukkua/\x2econfig/composer/vendor/bin\x1e/home/nukkua/go/bin\x1e/opt/cuda/bin\x1e/home/nukkua/RegRipper3\x2e0\x1e/usr/bin\x1e/home/nukkua/\x2ecargo/bin\x1e/home/nukkua/\x2elocal/bin\x1e/home/nukkua/flutter/flutter/bin\x1e/home/nukkua/\x2econfig/composer/vendor/bin\x1e/home/nukkua/go/bin\x1e/opt/cuda/bin\x1e/home/nukkua/RegRipper3\x2e0
 SETUVAR --export PDF_SEARCH_DIRS:/home/nukkua/Documents\x1e/home/nukkua/Downloads\x1e/home/nukkua/books\x1es
+SETUVAR --export PNPM_HOME:/home/nukkua/\x2elocal/share/pnpm
 SETUVAR __fish_initialized:4300
 SETUVAR fish_color_param:white
 SETUVAR fish_greeting:\x1d
-SETUVAR fish_user_paths:/home/nukkua/scripts/personal\x1e/home/nukkua/\x2eopencode/bin\x1e/home/nukkua/\x2elocal/bin\x1e/home/leverna/\x2elocal/bin
+SETUVAR fish_user_paths:/home/nukkua/\x2elocal/share/pnpm/bin\x1e/home/nukkua/\x2elocal/share/pnpm\x1e/home/nukkua/scripts/personal\x1e/home/nukkua/\x2eopencode/bin\x1e/home/nukkua/\x2elocal/bin\x1e/home/leverna/\x2elocal/bin
