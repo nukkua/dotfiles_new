@@ -22,8 +22,15 @@ set(0, "Number", { fg = "#dddddd" })
 set(0, "Keyword", { bold = true })
 set(0, "Comment", { italic = true, fg = "#777777"})
 set(0, "Constant", { fg = "#999999" })
-set(0, "NormalFloat", { fg = "#555555", bg = "NONE" })
+set(0, "NormalFloat", { fg = "#dddddd", bg = "NONE" })
 set(0, "FloatBorder", { fg = "#555555", bg = "NONE" })
+set(0, "NormalNC", { bg = "NONE" })
+set(0, "LineNr", { fg = "#555555", bg = "NONE" })
+set(0, "CursorLineNr", { fg = "#dddddd", bg = "NONE" })
+set(0, "SignColumn", { bg = "NONE" })
+set(0, "FoldColumn", { bg = "NONE" })
+set(0, "WinSeparator", { fg = "#333333", bg = "NONE" })
+set(0, "StatusLineNC", { bg = "NONE" })
 
 set(0, "@keyword", { bold = true })
 set(0, "@keyword.function", { bold = true })
@@ -45,6 +52,19 @@ set(0, "Pmenu", { bg = "NONE" })
 set(0, "PmenuSel", { bg = "#222222" })
 set(0, "PmenuSbar", { bg = "NONE" })
 set(0, "PmenuThumb", { bg = "#555555" })
+
+-- Quickfix: sakura filenames + subtle active-row cue inside qf window
+set(0, "qfFileName", { fg = "#ffb6c1" })
+set(0, "QuickFixLine", { fg = "#ffb6c1", bg = "NONE", bold = true })
+set(0, "QuickFixCursorLine", { fg = "#ffb6c1", bg = "NONE" })
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "qf",
+  callback = function()
+    vim.wo.cursorline = true
+    vim.wo.winhl = "CursorLine:QuickFixCursorLine"
+  end,
+})
 
 set(0, "Search",    { fg = "#d8d8d8", bg = "NONE", underline = true })
 set(0, "ConflictMarker", { fg = "#d8d8d8", bg = "NONE", reverse = true })
@@ -77,6 +97,22 @@ set(0, "markdownCode",     { fg = "#c8c8c8" })
 set(0, "FidgetNormal", { bg = "NONE" })
 set(0, "FidgetTitle", { bg = "NONE" })
 set(0, "FidgetTask", { bg = "NONE" })
+
+-- Oil: sakura dirs only
+set(0, "OilDir", { fg = "#ffb6c1" })
+set(0, "OilDirIcon", { fg = "#ffb6c1" })
+
+-- Neogit: simple git colors (everything else stays quiet)
+-- staged/unstaged/untracked entries link to these base groups, so this covers all three
+set(0, "NeogitSectionHeader", { fg = "#ffb6c1", bold = true })
+set(0, "NeogitChangeAdded", { fg = "#9ecfa8" })
+set(0, "NeogitChangeNewFile", { fg = "#9ecfa8" })
+set(0, "NeogitChangeModified", { fg = "#c49aa6" })
+set(0, "NeogitChangeDeleted", { fg = "#d98c8c" })
+set(0, "NeogitChangeRenamed", { fg = "#c3a8d8" })
+set(0, "NeogitChangeUpdated", { fg = "#d8b48f" })
+set(0, "NeogitChangeCopied", { fg = "#8fc3c3" })
+set(0, "NeogitChangeUnmerged", { fg = "#d8cf9e" })
 
 
 vim.cmd("hi StatusLine guibg=none")

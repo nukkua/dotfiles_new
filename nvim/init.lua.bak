@@ -1,0 +1,924 @@
+-- Themes
+-- vim ui2
+require('vim._core.ui2').enable({})
+
+-- Config
+vim.opt.lazyredraw = true
+vim.opt.synmaxcol = 200
+vim.opt.inccommand = "split"
+vim.opt.isfname:append("@-@")
+
+vim.opt.autoread = true
+vim.loader.enable()
+vim.opt.mouse         = ""
+vim.wo.signcolumn     = 'no'
+vim.opt.guicursor     = "n-v-sm:block"
+vim.opt.laststatus    = 3
+vim.g.netrw_banner    = 0
+vim.g.netrw_winsize   = 25
+vim.o.shada           = [[!,'20,<50,s10,h]]
+vim.opt.termguicolors = true
+vim.g.mapleader       = " "
+vim.opt.ignorecase    = true
+vim.opt.smartcase     = true
+vim.opt.swapfile      = false
+vim.opt.backup        = false
+vim.o.cmdheight       = 0
+
+vim.g.zig_executable  = "/home/leverna/zig/"
+
+vim.api.nvim_create_autocmd("TextYankPost", {
+    desc = "Highlight when yanking (copying text)",
+    callback = function()
+        vim.hl.on_yank({ timeout = 55 })
+    end,
+})
+
+-- pack
+vim.pack.add({
+    { src = "https://github.com/j-hui/fidget.nvim" },
+    { src = "https://github.com/AndrewRadev/tagalong.vim" },
+    { src = "https://github.com/stevearc/oil.nvim" },
+    { src = "https://github.com/ThePrimeagen/harpoon",                       version = "harpoon2" },
+    { src = "https://github.com/nvim-lua/plenary.nvim" },
+    { src = "https://github.com/xeluxee/competitest.nvim" },
+    { src = "https://github.com/MunifTanjim/nui.nvim" },
+    { src = "https://github.com/neovim/nvim-lspconfig" },
+    { src = "https://github.com/nvim-treesitter/nvim-treesitter",            version = "main" },
+    { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects" },
+    { src = "https://github.com/mason-org/mason.nvim" },
+    { src = "https://github.com/mason-org/mason-lspconfig.nvim" },
+    { src = "https://github.com/L3MON4D3/LuaSnip" },
+    { src = "https://github.com/Saghen/blink.cmp",                           version = vim.version.range("*") },
+    { src = "https://github.com/tpope/vim-commentary" },
+    { src = "https://github.com/dmtrKovalenko/fff.nvim" },
+    { src = "https://github.com/lifepillar/vim-solarized8",                  branch = "neovim" },
+})
+
+local theme = "quiet"
+vim.opt.termguicolors = true
+vim.opt.background = "dark"
+vim.g.solarized_termtrans = 0
+vim.g.solarized_statusline = "flat"
+vim.g.solarized_visibility = "low"
+vim.cmd.colorscheme(theme)
+
+vim.api.nvim_create_autocmd('PackChanged', {
+    callback = function(ev)
+        local name, kind = ev.data.spec.name, ev.data.kind
+        if name == 'fff.nvim' and (kind == 'install' or kind == 'update') then
+            if not ev.data.active then
+                vim.cmd.packadd('fff.nvim')
+            end
+            require('fff.download').download_or_build_binary()
+        end
+    end,
+})
+
+
+vim.g.fff = {
+    title = 'fff',
+    prompt = '> ',
+    lazy_sync = true,
+    debug = {
+        enabled = false,
+        show_scores = false,
+    },
+    layout = {
+        show_scrollbar = false,
+    },
+    preview = {
+        enabled = false,
+    },
+    keymaps = {
+        close = '<C-a>',
+        cycle_grep_modes = '<C-s>',
+    },
+    git = {
+        enabled = false,
+        show_status = false,
+    }
+}
+
+do
+    local git_utils = require('fff.git_utils')
+    git_utils.should_show_border = function(_)
+        return false
+    end
+end
+
+local competitest_loaded = false
+local function load_competitest()
+    if competitest_loaded then
+        return
+    end
+
+    vim.cmd("packadd competitest.nvim")
+
+    require("competitest").setup({
+        companion_port = 27121,
+        evaluate_template_modifiers = true,
+        template_file = {
+            cpp = "~/cf/templates/template.cpp",
+        },
+        received_contests_problems_path = "$(PROBLEM)/main.$(FEXT)",
+    })
+
+    competitest_loaded = true
+end
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "cpp",
+    callback = function()
+        load_competitest()
+    end,
+})
+
+local harpoon = require("harpoon")
+harpoon:setup()
+
+require("oil").setup({
+    view_options = {
+        show_hidden = true,
+        natural_order = "fast",
+    },
+    columns = {},
+    delete_to_trash = false,
+    skip_confirm_for_simple_edits = true,
+    prompt_save_on_select_new_entry = false,
+    default_file_explorer = true,
+    cleanup_delay_ms = 0,
+    watch_for_changes = false,
+    confirmation = {
+        max_width = 0.4,
+        max_height = 0.2,
+        border = "rounded",
+        win_options = {
+            winblend = 0,
+        },
+    },
+})
+
+
+require("fidget").setup {
+    progress = {
+        suppress_on_insert = true,
+        poll_rate = 0,
+    },
+    notification = {
+        pool_rate = 5,
+        window = {
+            winblend = 0,
+            normal_hl = "NormalFloat",
+        }
+    }
+}
+vim.g.tagalong_filetypes = {
+    'html',
+    'xml',
+    'javascriptreact',
+    'typescriptreact',
+    'astro',
+    'vue',
+}
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "astro",
+    callback = function()
+        vim.opt_local.iskeyword:remove("-")
+    end,
+})
+
+vim.keymap.set("n", "<leader>cp", function()
+    local word = vim.fn.expand("<cword>")
+    local ft = vim.bo.filetype
+
+    local templates = {
+        javascript = "console.log('%s:', %s);",
+        typescript = "console.log('%s:', %s);",
+        astro = "console.log('%s:', %s);",
+        vue = "console.log('%s:', %s);",
+        python = "print('%s:', %s)",
+        lua = "print('%s:', %s)",
+        rust = "println!(\"%s: {:?}\", %s);",
+    }
+
+    local template = templates[ft]
+    if template then
+        local line = string.format(template, word, word)
+        vim.api.nvim_put({ line }, "l", true, true)
+    else
+        print("No template for filetype: " .. ft)
+    end
+end)
+
+
+vim.opt.clipboard:append("unnamedplus")
+vim.opt.splitright = true
+vim.opt.splitbelow = true
+vim.opt.relativenumber = true
+vim.opt.number = true
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.softtabstop = 4
+vim.opt.expandtab = true
+vim.opt.autoindent = true
+vim.opt.smartindent = false
+
+
+vim.keymap.set({ "n", "v", "x" }, "<leader>n", ":norm ", { desc = "ENTER NORM COMMAND." })
+vim.keymap.set('i', '<C-c>', '<Esc>', { noremap = true })
+vim.keymap.set("n", "n", "nzzzv")
+vim.keymap.set("n", "N", "Nzzzv")
+vim.keymap.set("n", "<C-d>", "<C-d>zz")
+vim.keymap.set("n", "<C-u>", "<C-u>zz")
+vim.keymap.set('n', '<leader>s', ':e #<CR>')
+vim.keymap.set('n', '<C-j>s', '<cmd>cprev<CR>')
+vim.keymap.set('n', '<C-j>n', '<cmd>cnext<CR>')
+vim.keymap.set("n", "<leader>tt", ":term <CR>")
+vim.keymap.set("n", "<leader>tf", "<cmd>tabnew %<CR>", { desc = "Open current buffer in new tab" }) --  move current buffer to new tab
+
+vim.keymap.set("n", "-", "<CMD>Oil<CR>")
+vim.keymap.set("x", "<leader>p", [["_dP]], { desc = "Open current buffer in new tab" })
+
+vim.g.nvim_tree_highlight_opened_files = 1
+vim.api.nvim_set_keymap('n', '<Space>w', ':w<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<Space>q', ':q<CR>', { noremap = true, silent = true })
+
+vim.keymap.set(
+    'n',
+    '<Space>f',
+    function() require('fff').find_files() end,
+    { desc = 'FFFind files' }
+)
+
+vim.keymap.set(
+    'n',
+    '<Space>g',
+    function() require('fff').live_grep() end,
+    { desc = 'Live grep' }
+)
+
+vim.keymap.set(
+    'n',
+    '<Space>ba',
+    function() require('fff').find_files({ query = 'git:modified' }) end,
+    { desc = 'Git status' }
+)
+
+vim.keymap.set(
+    'n',
+    '<Space>be',
+    function() require('fff').find_files({ query = 'git:staged' }) end,
+    { desc = 'Git status' }
+)
+
+vim.keymap.set("n", "<leader>gw", function()
+    require("fff").live_grep({
+        query = vim.fn.expand("<cword>")
+    })
+end)
+
+vim.api.nvim_set_keymap('n', '<C-c>', ":nohl<CR>", { noremap = true, silent = true })
+
+vim.keymap.set('n', '<Space>u', function()
+    vim.cmd.packadd("nvim.undotree")
+    require("undotree").open()
+end, { desc = "Toggle builtin undotree" })
+
+vim.api.nvim_set_keymap('n', '<leader>r', ":edit!<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>ca', ':Commentary<CR>', { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>cr", function()
+    local makeprg = vim.fn.expandcmd(vim.bo.makeprg ~= "" and vim.bo.makeprg or vim.o.makeprg)
+    local output = {}
+
+    vim.fn.jobstart(makeprg, {
+        stdout_buffered = true,
+        stderr_buffered = true,
+        on_stdout = function(_, data)
+            if data then vim.list_extend(output, data) end
+        end,
+        on_stderr = function(_, data)
+            if data then vim.list_extend(output, data) end
+        end,
+        on_exit = function(_, code)
+            vim.schedule(function()
+                vim.fn.setqflist({}, "r", {
+                    title = makeprg,
+                    lines = output,
+                    efm = vim.bo.errorformat,
+                })
+                if code ~= 0 then
+                    vim.cmd("cwindow")
+                else
+                    vim.cmd("cclose")
+                    vim.notify("make ok", vim.log.levels.INFO)
+                end
+            end)
+        end,
+    })
+end)
+
+vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "moves lines down in visual selection" })
+vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "moves lines up in visual selection" })
+
+vim.keymap.set("v", "<", "<gv", { desc = "Unindent and keep selection" })
+vim.keymap.set("v", ">", ">gv", { desc = "Indent and keep selection" })
+
+vim.keymap.set("n", "J", "mzJ`z", { desc = "Join lines without moving cursor" })
+vim.keymap.set('n', '*', '*zz', { silent = true })
+vim.keymap.set('n', '#', '#zz', { silent = true })
+vim.keymap.set('n', 'g*', 'g*zz', { silent = true })
+vim.keymap.set('n', 'g#', 'g#zz', { silent = true })
+vim.cmd([[cnoremap <CR> <CR><C-c>zz]])
+
+vim.keymap.set("n", ",,", function() harpoon:list():add() end)
+vim.keymap.set("n", ",e", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end)
+vim.keymap.set("n", ",s", function() harpoon:list():select(1) end)
+vim.keymap.set("n", ",n", function() harpoon:list():select(2) end)
+vim.keymap.set("n", ",t", function() harpoon:list():select(3) end)
+vim.keymap.set("n", ",r", function() harpoon:list():select(4) end)
+vim.keymap.set("n", ",w", function() harpoon:list():select(5) end)
+vim.keymap.set("n", ",m", function() harpoon:list():prev() end)
+vim.keymap.set("n", ",h", function() harpoon:list():next() end)
+
+vim.keymap.set('n', '<leader>d', vim.diagnostic.open_float, { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>ap", function()
+    load_competitest()
+    vim.cmd("CompetiTest receive problem")
+end, { desc = "Receive problem" })
+
+vim.keymap.set("n", "<leader>ac", function()
+    load_competitest()
+    vim.cmd("CompetiTest receive contest")
+end, { desc = "Receive contest" })
+vim.keymap.set("n", "<leader>ar", "<cmd>CompetiTest run<CR>", { desc = "run the problem" })
+vim.keymap.set("n", "<leader>as", "<cmd>CompetiTest add_testcase<CR>", { desc = "run the problem" })
+vim.opt.cursorline = false
+
+local capabilities = require("blink.cmp").get_lsp_capabilities()
+vim.lsp.config("*", {
+    capabilities = capabilities,
+})
+vim.api.nvim_create_autocmd("LspAttach", {
+    callback = function(args)
+        local bufnr = args.buf
+        local opts = { buffer = bufnr, remap = false }
+        vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+
+        vim.keymap.set("n", ")d", function()
+            vim.diagnostic.jump({
+                count = 1,
+                on_jump = function()
+                    vim.diagnostic.open_float(nil, { focus = false })
+                end,
+            })
+        end, opts)
+        vim.keymap.set("n", "(d", function()
+            vim.diagnostic.jump({
+                count = -1,
+                on_jump = function()
+                    vim.diagnostic.open_float(nil, { focus = false })
+                end,
+            })
+        end, opts)
+        vim.keymap.set("n", "<leader>le", function()
+            local ft = vim.bo[bufnr].filetype
+            vim.lsp.buf.format({
+                async = true,
+                filter = function(client)
+                    if ft == "astro" then
+                        return client.name == "astro"
+                    end
+                    if client.name == "vtsls" then
+                        return false
+                    end
+                    return true
+                end,
+            })
+        end, opts)
+    end,
+})
+
+require("mason").setup()
+require("mason-lspconfig").setup({
+    ensure_installed = {
+        "clangd",
+        "lua_ls",
+        "eslint",
+        "rust_analyzer",
+        "zls",
+        "vtsls",
+        "vue_ls",
+        "astro",
+        "svelte",
+        "tailwindcss",
+        "gopls",
+    },
+    automatic_enable = false,
+})
+
+vim.lsp.config("clangd", {
+    init_options = {
+        fallbackFlags = { "-std=c++23" },
+    },
+})
+
+vim.lsp.config("lua_ls", {
+    root_markers = {
+        ".luarc.json",
+        ".luarc.jsonc",
+        ".stylua.toml",
+        "stylua.toml",
+        "selene.toml",
+        "selene.yml",
+        ".git",
+    },
+
+    settings = {
+        Lua = {
+            workspace = {
+                checkThirdParty = false,
+            },
+        },
+    },
+})
+
+vim.lsp.config("rust_analyzer", {
+    settings = {
+        ["rust-analyzer"] = {
+            checkOnSave = false,
+
+            cargo = {
+                allFeatures = false,
+                loadOutDirsFromCheck = false,
+            },
+            files = {
+                excludeDirs = {
+                    ".git",
+                    "target",
+                    "node_modules",
+                },
+            },
+            diagnostics = {
+                enable = true,
+            },
+        },
+    },
+})
+vim.lsp.config("vtsls", {
+    filetypes = {
+        "typescript",
+        "javascript",
+        "javascriptreact",
+        "typescriptreact",
+        "vue",
+    },
+    settings = {
+        vtsls = {
+            tsserver = {
+                globalPlugins = {
+                    {
+                        name = "@vue/typescript-plugin",
+                        location = vim.fn.stdpath("data")
+                            .. "/mason/packages/vue-language-server/node_modules/@vue/language-server",
+                        languages = { "vue" },
+                        configNamespace = "typescript",
+                    },
+                },
+            },
+        },
+    },
+})
+
+vim.lsp.enable({
+    "clangd",
+    "lua_ls",
+    "eslint",
+    "rust_analyzer",
+    "zls",
+    "vtsls",
+    "vue_ls",
+    "astro",
+    "svelte",
+    "tailwindcss",
+    "gopls",
+})
+
+
+require("blink.cmp").setup({
+    keymap = {
+        preset = "none",
+        ["<C-e>"] = { "show", "show_documentation", "hide_documentation" },
+        ["<C-a>"] = { "hide" },
+        ["<C-s>"] = { "accept" },
+
+        ["<C-n>"] = { "select_next", "fallback" },
+        ["<C-p>"] = { "select_prev", "fallback" },
+
+        ["<C-f>"] = { "scroll_documentation_down", "fallback" },
+        ["<C-b>"] = { "scroll_documentation_up", "fallback" },
+        ["<C-g>"] = {
+            "show_signature",
+            "hide_signature",
+            "fallback",
+        },
+        ["<Tab>"] = {
+            "snippet_forward",
+            "fallback",
+        },
+        ["<S-Tab>"] = {
+            "snippet_backward",
+            "fallback",
+        },
+    },
+
+    completion = {
+        menu = {
+            auto_show = false,
+        },
+        documentation = {
+            auto_show = false,
+        },
+        list = {
+            selection = {
+                preselect = true,
+                auto_insert = false,
+            },
+        },
+    },
+    signature = {
+        enabled = true,
+        trigger = {
+            enabled = false,
+        },
+    },
+
+    sources = {
+        default = { "lsp", "path", "snippets", "buffer" },
+    },
+
+    snippets = {
+        preset = "luasnip",
+    },
+
+    fuzzy = {
+        implementation = "prefer_rust_with_warning",
+    },
+})
+
+require("luasnip").setup({ enable_autosnippets = true })
+require("luasnip.loaders.from_lua").load({ paths = "~/.config/nvim/snippets/" })
+
+vim.api.nvim_create_autocmd("BufWritePost", {
+    pattern = "*.md",
+    callback = function()
+        local file = vim.fn.expand("%:p")
+        local pdf = vim.fn.expand("%:p:r") .. ".pdf"
+
+        vim.fn.jobstart({ "pandoc", file, "-o", pdf }, { detach = true })
+    end,
+})
+
+vim.keymap.set("n", "<leader>mp", function()
+    local pdf = vim.fn.expand("%:p:r") .. ".pdf"
+    vim.fn.jobstart({ "zathura", pdf }, { detach = true })
+end, { desc = "Open Markdown PDF in Zathura" })
+
+
+vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter", "VimEnter" }, {
+    callback = function()
+        if vim.w.git_conflict_matches then
+            return
+        end
+
+        vim.w.git_conflict_matches = {
+            vim.fn.matchadd("ConflictMarker", [[^<<<<<<< .*$]]),
+            vim.fn.matchadd("ConflictMarker", [[^=======$]]),
+            vim.fn.matchadd("ConflictMarker", [[^>>>>>>> .*$]]),
+        }
+    end,
+})
+
+require("intro");
+local disabled_built_ins = {
+    "gzip",
+    "zip",
+    "zipPlugin",
+    "tar",
+    "tarPlugin",
+    "getscript",
+    "getscriptPlugin",
+    "vimball",
+    "vimballPlugin",
+    "2html_plugin",
+    "logipat",
+    "rrhelper",
+    "spellfile_plugin",
+}
+
+for _, plugin in pairs(disabled_built_ins) do
+    vim.g["loaded_" .. plugin] = 1
+end
+
+local augroup = vim.api.nvim_create_augroup("MakeSettings", {})
+
+vim.api.nvim_create_autocmd("FileType", {
+    group = augroup,
+    pattern = "rust",
+    callback = function()
+        vim.cmd("compiler cargo")
+        vim.opt_local.makeprg =
+        "cargo check --message-format short"
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    group = augroup,
+    pattern = { "c", "cpp" },
+    callback = function()
+        vim.cmd("compiler gcc")
+        vim.opt_local.makeprg = "g++ -std=c++23 -Wall -Wextra -Wshadow %:p -o %:p:r"
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    group = augroup,
+    pattern = {
+        "javascript",
+        "typescript",
+        "vue",
+    },
+    callback = function()
+        vim.opt_local.makeprg = "npx --loglevel=error eslint -f unix --quiet"
+        vim.opt_local.errorformat = "%f:%l:%c: %m"
+    end,
+})
+
+require("nvim-treesitter").install({
+    "c",
+    "cpp",
+    "lua",
+    "rust",
+    "javascript",
+    "typescript",
+    "vue",
+    "astro",
+    "svelte",
+    "go",
+    "zig",
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = {
+        "c",
+        "cpp",
+        "lua",
+        "rust",
+        "javascript",
+        "typescript",
+        "vue",
+        "astro",
+        "svelte",
+        "go",
+        "zig",
+    },
+
+    callback = function()
+        vim.treesitter.start()
+    end,
+})
+
+require("nvim-treesitter-textobjects").setup({
+    select = {
+        lookahead = true,
+
+        selection_modes = {
+            ["@parameter.outer"] = "v",
+            ["@function.outer"] = "V",
+            ["@class.outer"] = "V",
+        },
+
+        include_surrounding_whitespace = false,
+    },
+
+    move = {
+        set_jumps = true,
+    },
+})
+
+local select = require("nvim-treesitter-textobjects.select")
+vim.keymap.set({ "x", "o" }, "af", function()
+    select.select_textobject("@function.outer", "textobjects")
+end)
+
+vim.keymap.set({ "x", "o" }, "if", function()
+    select.select_textobject("@function.inner", "textobjects")
+end)
+
+vim.keymap.set({ "x", "o" }, "aa", function()
+    select.select_textobject("@parameter.outer", "textobjects")
+end)
+
+vim.keymap.set({ "x", "o" }, "ia", function()
+    select.select_textobject("@parameter.inner", "textobjects")
+end)
+
+vim.keymap.set({ "x", "o" }, "ai", function()
+    select.select_textobject("@conditional.outer", "textobjects")
+end)
+
+vim.keymap.set({ "x", "o" }, "ii", function()
+    select.select_textobject("@conditional.inner", "textobjects")
+end)
+
+vim.keymap.set({ "x", "o" }, "al", function()
+    select.select_textobject("@loop.outer", "textobjects")
+end)
+
+vim.keymap.set({ "x", "o" }, "il", function()
+    select.select_textobject("@loop.inner", "textobjects")
+end)
+
+local move = require("nvim-treesitter-textobjects.move")
+
+vim.keymap.set({ "n", "x", "o" }, "]f", function()
+    move.goto_next_start("@function.outer", "textobjects")
+end)
+
+vim.keymap.set({ "n", "x", "o" }, "[f", function()
+    move.goto_previous_start("@function.outer", "textobjects")
+end)
+
+vim.keymap.set({ "n", "x", "o" }, "]l", function()
+    move.goto_next_start("@loop.outer", "textobjects")
+end)
+
+vim.keymap.set({ "n", "x", "o" }, "[l", function()
+    move.goto_previous_start("@loop.outer", "textobjects")
+end)
+
+vim.keymap.set({ "n", "x", "o" }, "]i", function()
+    move.goto_next_start("@conditional.outer", "textobjects")
+end)
+
+vim.keymap.set({ "n", "x", "o" }, "[i", function()
+    move.goto_previous_start("@conditional.outer", "textobjects")
+end)
+
+local swap = require("nvim-treesitter-textobjects.swap")
+
+vim.keymap.set("n", "<leader>an", function()
+    swap.swap_next("@parameter.inner")
+end)
+
+vim.keymap.set("n", "<leader>ap", function()
+    swap.swap_previous("@parameter.inner")
+end)
+
+local repeat_move =
+    require("nvim-treesitter-textobjects.repeatable_move")
+
+vim.keymap.set(
+    { "n", "x", "o" },
+    ",n",
+    repeat_move.repeat_last_move_next
+)
+
+vim.keymap.set(
+    { "n", "x", "o" },
+    ",p",
+    repeat_move.repeat_last_move_previous
+)
+
+vim.keymap.set({ "n", "x", "o" }, "]F", function()
+    move.goto_next_end("@function.outer", "textobjects")
+end)
+
+vim.keymap.set({ "n", "x", "o" }, "[F", function()
+    move.goto_previous_end("@function.outer", "textobjects")
+end)
+
+local ts_utils = {}
+local function collect_vue_functions()
+    local parser = vim.treesitter.get_parser(0)
+    local result = {}
+
+    local wanted = {
+        method_definition = true,
+        arrow_function = true,
+        function_declaration = true,
+        function_expression = true,
+    }
+
+    parser:for_each_tree(function(tree, lang_tree)
+        local lang = lang_tree:lang()
+
+        if lang ~= "typescript"
+            and lang ~= "javascript"
+            and lang ~= "tsx"
+        then
+            return
+        end
+
+        local root = tree:root()
+
+        local function walk(node)
+            if wanted[node:type()] then
+                local sr, sc = node:range()
+
+                table.insert(result, {
+                    row = sr,
+                    col = sc,
+                    node = node,
+                })
+            end
+
+            for child in node:iter_children() do
+                walk(child)
+            end
+        end
+
+        walk(root)
+    end)
+
+    table.sort(result, function(a, b)
+        if a.row == b.row then
+            return a.col < b.col
+        end
+
+        return a.row < b.row
+    end)
+
+    return result
+end
+
+local function vue_next_function()
+    local cursor = vim.api.nvim_win_get_cursor(0)
+
+    local row = cursor[1] - 1
+    local col = cursor[2]
+
+    for _, item in ipairs(collect_vue_functions()) do
+        if item.row > row
+            or (item.row == row and item.col > col)
+        then
+            vim.api.nvim_win_set_cursor(
+                0,
+                { item.row + 1, item.col }
+            )
+
+            return
+        end
+    end
+end
+
+local function vue_prev_function()
+    local cursor = vim.api.nvim_win_get_cursor(0)
+
+    local row = cursor[1] - 1
+    local col = cursor[2]
+
+    local funcs = collect_vue_functions()
+
+    for idx = #funcs, 1, -1 do
+        local item = funcs[idx]
+
+        if item.row < row
+            or (item.row == row and item.col < col)
+        then
+            vim.api.nvim_win_set_cursor(
+                0,
+                { item.row + 1, item.col }
+            )
+
+            return
+        end
+    end
+end
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "vue",
+
+    callback = function(args)
+        vim.keymap.set(
+            { "n", "x", "o" },
+            "]f",
+            vue_next_function,
+            {
+                buffer = args.buf,
+                desc = "Next Vue script function",
+            }
+        )
+
+        vim.keymap.set(
+            { "n", "x", "o" },
+            "[f",
+            vue_prev_function,
+            {
+                buffer = args.buf,
+                desc = "Previous Vue script function",
+            }
+        )
+    end,
+})
