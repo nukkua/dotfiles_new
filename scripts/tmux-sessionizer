@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Pick a project dir with fzf, then switch to its tmux session (creating it if needed).
+# Usage: tmux-sessionizer [dir]
+
+if [[ $# -eq 1 ]]; then
+    selected=$1
+else
+    selected=$(
+        {
+            find ~/projects ~/working ~/tools -mindepth 1 -maxdepth 1 -type d 2>/dev/null
+            printf '%s\n' ~/cf ~/all-cp ~/zig ~/st ~/scripts ~/dotfiles_new ~/.config/nvim
+        } | sed "s|^$HOME|~|" |
+        fzf --height=100% --layout=reverse --border --prompt=" > "
+    )
+    selected=${selected/#\~/$HOME}
+fi
+
+[[ -n "$selected" && -d "$selected" ]] || exit 0
+
+# tmux session names can't contain dots or colons
+name=$(basename "$selected" | tr '.:' '__')
+
+if ! tmux has-session -t="$name" 2>/dev/null; then
+    tmux new-session -ds "$name" -c "$selected"
+fi
+
+if [[ -n "${TMUX:-}" ]]; then
+    tmux switch-client -t "$name"
+else
+    tmux attach-session -t "$name"
+fi

@@ -10,6 +10,14 @@ function fish_prompt
                 and set color $fish_color_cwd_root
         end
 
+        echo -n ' '
+        echo -n (prompt_pwd)
+        set_color normal
+
+        echo -n $symbol
+end
+
+function fish_right_prompt
         set -l mode insert
         switch $fish_bind_mode
                 case default
@@ -22,14 +30,15 @@ function fish_prompt
                         set mode visual
         end
 
-        echo -n ' '
-        echo -n (prompt_pwd)
-        echo -n ' ['
-        echo -n $mode
-        echo -n ']'
-        set_color normal
+        set_color ffb6c1
+        echo -n '['$mode']'
 
-        echo -n $symbol
+        if set -q SSH_TTY; or set -q SSH_CONNECTION
+                set_color 8a8a8a
+                echo -n '  󰆍 SSH'
+        end
+
+        set_color normal
 end
 
 function fish_mode_prompt

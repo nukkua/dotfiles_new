@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+setsid -f firefox --new-tab "https://github.com/nukkua" >/dev/null 2>&1 &

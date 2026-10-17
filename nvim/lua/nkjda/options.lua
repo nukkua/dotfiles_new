@@ -15,15 +15,10 @@ vim.opt.mouse = ""
 vim.wo.signcolumn = 'no'
 vim.opt.guicursor = "n-v-sm:block"
 vim.opt.laststatus = 3
-vim.g.netrw_banner = 0
-vim.g.netrw_winsize = 25
 vim.opt.sessionoptions:append("globals")
 vim.o.shada = [[!,'20,<50,s10,h]]
 vim.opt.termguicolors = true
 vim.opt.background = "dark"
-vim.g.solarized_termtrans = 0
-vim.g.solarized_statusline = "flat"
-vim.g.solarized_visibility = "low"
 
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
@@ -44,10 +39,6 @@ vim.opt.autoindent = true
 vim.opt.smartindent = false
 vim.opt.cursorline = false
 
-vim.g.zig_executable = "/home/leverna/zig/"
-vim.g.nvim_tree_highlight_opened_files = 1
-
-vim.opt.termguicolors = true
 vim.cmd.colorscheme("quiet")
 
 -- disable unused built-in plugins

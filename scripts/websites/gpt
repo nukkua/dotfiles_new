@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+setsid -f firefox --new-tab "https://chatgpt.com" >/dev/null 2>&1 &

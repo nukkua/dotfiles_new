@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+setsid -f firefox --new-tab "http://localhost:9001" >/dev/null 2>&1 &

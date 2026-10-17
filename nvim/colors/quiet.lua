@@ -105,6 +105,18 @@ set(0, "OilDirIcon", { fg = "#ffb6c1" })
 -- Neogit: simple git colors (everything else stays quiet)
 -- staged/unstaged/untracked entries link to these base groups, so this covers all three
 set(0, "NeogitSectionHeader", { fg = "#ffb6c1", bold = true })
+-- Head: branch you are on — bright sakura; Head variant gets dark pill so current pops in branch lists
+set(0, "NeogitBranch", { fg = "#ffb6c1", bold = true })
+set(0, "NeogitBranchHead", { fg = "#ffb6c1", bg = "#1a1a1a", bold = true, underline = true })
+set(0, "NeogitObjectId", { fg = "#777777" })
+-- popup menus (? / b / c / etc): keys in sakura, rest stays quiet
+set(0, "NeogitPopupActionKey", { fg = "#ffb6c1", bold = true })
+set(0, "NeogitPopupSwitchKey", { fg = "#ffb6c1", bold = true })
+set(0, "NeogitPopupOptionKey", { fg = "#ffb6c1", bold = true })
+set(0, "NeogitPopupConfigKey", { fg = "#ffb6c1", bold = true })
+-- selection: was light-grey block, now matches TelescopeSelection + sakura
+set(0, "NeogitActiveItem", { bg = "#1a1a1a", fg = "#ffb6c1", bold = true })
+set(0, "NeogitCursorLine", { bg = "#1a1a1a" })
 set(0, "NeogitChangeAdded", { fg = "#9ecfa8" })
 set(0, "NeogitChangeNewFile", { fg = "#9ecfa8" })
 set(0, "NeogitChangeModified", { fg = "#c49aa6" })
