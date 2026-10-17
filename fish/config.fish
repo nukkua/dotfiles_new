@@ -8,16 +8,11 @@ set -x LS_COLORS 'di=1;38;5;218:fi=0'
 alias vim='nvim'
 alias p='pi'
 alias kbdtoggle="$HOME/scripts/disable-laptop-keyboard.sh"
+alias work='bash ~/scripts/work.sh'
 
-set -Ux PATH $PATH /usr/bin $HOME/.cargo/bin $HOME/.local/bin $HOME/flutter/flutter/bin $HOME/.config/composer/vendor/bin $HOME/go/bin /opt/cuda/bin $HOME/RegRipper3.0
-
-if test -d "$HOME/flutter/flutter/bin"
-    set -x PATH $PATH $HOME/flutter/flutter/bin
-end
-
-# cargo (Rust)
+# fish_add_path skips dirs that are already in PATH or missing, and persists nothing on each start
+fish_add_path -g $HOME/.cargo/bin $HOME/.local/bin $HOME/go/bin $HOME/.config/composer/vendor/bin $HOME/flutter/flutter/bin /opt/cuda/bin $HOME/RegRipper3.0
 set -x CARGO_HOME $HOME/.cargo
-set -x PATH $CARGO_HOME/bin $PATH
 
 # zoxide
 zoxide init fish | source
@@ -27,11 +22,13 @@ set -x EDITOR nvim
 set -x VISUAL nvim
 
 set -x LLDB_USE_NATIVE_PDB_READER "yes"
+
 abbr --add zbr zig build run
 abbr --add zz z ..
 
-fish_add_path "/home/nukkua/.local/bin"
-stty -ixon
+if status is-interactive
+    stty -ixon
+end
 
 set -g fish_cursor_default block
 set -g fish_cursor_insert block
@@ -39,11 +36,17 @@ set -g fish_cursor_replace_one block
 set -g fish_cursor_replace block
 set -g fish_cursor_visual block
 
+set -x NVM_DIR "$HOME/.nvm"
+function nvm --wraps nvm
+    bass source "$NVM_DIR/nvm.sh" --no-use ';' nvm $argv
+end
+
 function fish_user_key_bindings
     fish_vi_key_bindings
 
     bind -M insert \cs accept-autosuggestion
-    bind \cg '~/scripts/personal/sx'
+    bind \cg '~/scripts/tmux-sessionizer'
+    bind -M insert \cg '~/scripts/tmux-sessionizer'
 
     bind -M insert \cc 'set fish_bind_mode default; commandline -f repaint'
     bind -M default \cc 'commandline -f cancel-commandline'

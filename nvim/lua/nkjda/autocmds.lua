@@ -55,5 +55,25 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
+-- auto-source edited config files (snippets/ reloads via luasnip loader instead)
+vim.api.nvim_create_autocmd("BufWritePost", {
+    pattern = vim.fn.stdpath("config") .. "/**/*.lua",
+    desc = "Re-source config file on save",
+    callback = function(args)
+        if args.file:find("/snippets/", 1, true) then return end
+        vim.cmd("source " .. vim.fn.fnameescape(args.file))
+    end,
+})
+
+-- live-reload files changed outside nvim (git, etc.):
+-- event-driven only (no polling): entering a buffer, refocusing nvim, a terminal job exiting
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "TermClose" }, {
+    desc = "Reload externally changed files",
+    callback = function()
+        if vim.fn.getcmdwintype() ~= "" then return end
+        vim.cmd("silent! checktime")
+    end,
+})
+
 -- intro screen (requires lua/intro.lua)
 require("intro")

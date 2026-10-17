@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+setsid -f firefox --new-tab "https://twitch.tv" >/dev/null 2>&1 &

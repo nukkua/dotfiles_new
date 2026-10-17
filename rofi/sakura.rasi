@@ -1,0 +1,115 @@
+configuration {
+    modi: "drun,run";
+    show-icons: false;
+    sidebar-mode: false;
+    font: "FiraCode Nerd Font 17";
+    kb-cancel: "Escape,Control+g";
+}
+
+* {
+    background:                  #000000ff;
+    background-soft:             #1a1a1aff;
+    foreground:                  #f5e0dcff;
+    sakura:                      #ffb7c5ff;
+    sakura-soft:                 #ffb7c526;
+    matcha:                      #b8e994ff;
+    fuji:                        #a6d7e8ff;
+    open-bg:                     #2a1f24ff;
+    active-bg:                   #3d242dff;
+    border-color:                #ffb7c5ff;
+
+    background-color:            transparent;
+    text-color:                  @foreground;
+}
+
+window {
+    width:                       900px;
+    height:                      560px;
+    x-offset:                    0;
+    y-offset:                    0;
+    border:                      2px;
+    border-radius:               14px;
+    border-color:                @border-color;
+    background-color:            @background;
+    padding:                     20px;
+    location:                    center;
+    anchor:                      center;
+}
+
+mainbox {
+    spacing:                     12px;
+    background-color:            transparent;
+    children:                    [ inputbar, listview ];
+}
+
+inputbar {
+    spacing:                     12px;
+    padding:                     14px 18px;
+    border-radius:               10px;
+    background-color:            @background-soft;
+    children:                    [ prompt, entry ];
+}
+
+prompt {
+    text-color:                  @sakura;
+    font:                        "FiraCode Nerd Font 17";
+}
+
+entry {
+    cursor-color: @sakura;
+    cursor-width: 10px;
+    hide-cursor-on-empty: false;
+    font:                        "FiraCode Nerd Font 17";
+    blink: false;
+}
+
+listview {
+    lines:                       10;
+    spacing:                     6px;
+    fixed-height:                true;
+    dynamic:                     false;
+    background-color:            transparent;
+}
+
+element {
+    padding:                     12px 16px;
+    border-radius:               8px;
+    spacing:                     10px;
+    background-color:            transparent;
+    text-color:                  @foreground;
+}
+
+element normal.normal {
+    background-color:            transparent;
+    text-color:                  @foreground;
+}
+
+element selected.normal {
+    background-color:            @background-soft;
+    text-color:                  @foreground;
+}
+
+element alternate.normal {
+    background-color:            transparent;
+    text-color:                  @foreground;
+}
+
+element normal.urgent,
+element selected.urgent,
+element alternate.urgent {
+    background-color:            @open-bg;
+    text-color:                  @foreground;
+}
+
+/* ACTIVE tab: sakura text on darker background */
+element normal.active,
+element selected.active,
+element alternate.active {
+    background-color:            @active-bg;
+    text-color:                  @sakura;
+}
+
+element-text {
+    text-color:                  inherit;
+    background-color:            transparent;
+}

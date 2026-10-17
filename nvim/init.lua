@@ -6,7 +6,9 @@ vim.g.maplocalleader = " "
 
 require("nkjda.options")
 require("nkjda.plugins")
+require("nkjda.select")
 require("nkjda.autocmds")
 require("nkjda.lsp")
 require("nkjda.completion")
 require("nkjda.keymaps")
+require("nkjda.http")

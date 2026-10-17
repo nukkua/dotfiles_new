@@ -35,7 +35,7 @@ require("mason").setup()
 require("mason-lspconfig").setup({
   ensure_installed = {
     "clangd", "lua_ls", "eslint", "rust_analyzer", "zls",
-    "vtsls", "vue_ls", "astro", "svelte", "tailwindcss", "gopls",
+    "vtsls", "vue_ls", "tailwindcss", "gopls",
   },
   automatic_enable = false,
 })
@@ -78,8 +78,6 @@ vim.lsp.config("vtsls", {
 
 vim.lsp.enable({
   "clangd", "lua_ls", "eslint", "rust_analyzer", "zls",
-  "vtsls", "vue_ls", "astro", "svelte", "tailwindcss", "gopls",
+  "vtsls", "vue_ls", "tailwindcss", "gopls",
 })
 
--- optional: idle auto-stop (uncomment to enable)
--- require("lsp_idle").setup()
