@@ -1,0 +1,158 @@
+font_size = 2
+
+[grid]
+hints = [
+    "a",
+    "s",
+    "d",
+    "f",
+    "j",
+    "k",
+    "l",
+    ";",
+    "g",
+    "h",
+    "q",
+    "w",
+    "e",
+    "r",
+    "t",
+    "y",
+    "u",
+    "i",
+    "o",
+    "p",
+]
+sub_hints = [
+    "a",
+    "s",
+    "d",
+    "f",
+    "j",
+    "k",
+    "l",
+    ";",
+    "g",
+    "h",
+    "q",
+    "w",
+    "e",
+    "r",
+    "t",
+    "y",
+    "u",
+    "i",
+    "o",
+    "p",
+    "z",
+    "x",
+    "c",
+    "v",
+    "b",
+]
+sub_cols = 5
+
+[bisect]
+hints = [
+    "k", "y", "u", "m", "h", "p",
+    "d", "i", "e", "s", "n", "t",
+    "x", "/", ".", "g", "l", "b",
+    "v", "c", "o", "r", "w", "q",
+]
+rows = 4
+cols = 6
+min_cell_size = 8
+
+[keys]
+normal = "N"
+bisect = "B"
+hint = "C"
+free_mode = "V"
+click = "space"
+double_click = "enter"
+triple_click = "M"
+close = "Q"
+undo = "backspace"
+macro_menu = "tab"
+macro_record = "`"
+right_click = "delete"
+middle_click = "insert"
+scroll_up = "up"
+scroll_down = "down"
+scroll_left = "left"
+scroll_right = "right"
+
+[colors]
+cell_normal = "#00000022"
+cell_drag = "#00000044"
+cell_highlight = "#FFFFFF12"
+
+text_first = "#FFFFFFFF"
+text_second = "#FFFFFFFF"
+text_highlight = "#FFFFFFFF"
+text_dim = "#88888888"
+
+sub_cell_normal = "#00000022"
+sub_bg = "#00000033"
+panel_bg = "#000000CC"
+
+text_white = "#FFFFFFFF"
+text_grey = "#888888AA"
+
+selected_bg = "#FFFFFF18"
+rec_bg = "#FFFFFF12"
+
+border = "#FFFFFF44"
+border_dragging = "#FFFFFF88"
+crosshair = "#FFFFFF88"
+
+hint_chip_bg = "#000000AA"
+hint_text = "#FFFFFFFF"
+hint_text_typed = "#FFFFFFFF"
+hint_dim = "#88888888"
+
+[macros]
+playback_speed = 1.0
+
+[free]
+left = "h"
+down = "j"
+up = "k"
+right = "l"
+fast = "="
+slow = "-"
+base_speed = 25
+fast_multiplier = 3.0
+slow_multiplier = 3.0
+min_speed = 1
+max_speed = 500
+
+[hint]
+detector = "auto"
+alphabet = [
+    "a",
+    "s",
+    "d",
+    "f",
+    "j",
+    "k",
+    "l",
+    ";",
+    "g",
+    "h",
+    "q",
+    "w",
+    "e",
+    "r",
+    "t",
+    "y",
+    "u",
+    "i",
+    "o",
+    "p",
+]
+max_label_len = 3
+auto_click = false
+downscale_longest = 1280
+edge_low_threshold = 50
+edge_high_threshold = 150
