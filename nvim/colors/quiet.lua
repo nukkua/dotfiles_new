@@ -102,29 +102,65 @@ set(0, "FidgetTask", { bg = "NONE" })
 set(0, "OilDir", { fg = "#ffb6c1" })
 set(0, "OilDirIcon", { fg = "#ffb6c1" })
 
--- Neogit: simple git colors (everything else stays quiet)
+-- http auth manager (<leader>ku): sakura title/keys/ids, same green/red as Git for token status
+set(0, "HttpAuthBorder", { fg = "#c49aa6" })
+set(0, "HttpAuthTitle", { fg = "#ffb6c1", bold = true })
+set(0, "HttpAuthKey", { fg = "#ffb6c1", bold = true })
+set(0, "HttpAuthId", { fg = "#ffb6c1" })
+set(0, "HttpAuthProject", { fg = "#c3a8d8" })
+set(0, "HttpAuthValid", { fg = "#9ecfa8" })
+set(0, "HttpAuthExpired", { fg = "#d98c8c" })
+set(0, "HttpAuthCursor", { bg = "#1a1a1a" })
+
+-- git status (lua/nkjda/git.lua): simple git colors (everything else stays quiet)
 -- staged/unstaged/untracked entries link to these base groups, so this covers all three
-set(0, "NeogitSectionHeader", { fg = "#ffb6c1", bold = true })
+set(0, "GitSectionHeader", { fg = "#ffb6c1", bold = true })
 -- Head: branch you are on — bright sakura; Head variant gets dark pill so current pops in branch lists
-set(0, "NeogitBranch", { fg = "#ffb6c1", bold = true })
-set(0, "NeogitBranchHead", { fg = "#ffb6c1", bg = "#1a1a1a", bold = true, underline = true })
-set(0, "NeogitObjectId", { fg = "#777777" })
+set(0, "GitBranch", { fg = "#ffb6c1", bold = true })
+set(0, "GitBranchHead", { fg = "#ffb6c1", bg = "#1a1a1a", bold = true, underline = true })
+set(0, "GitObjectId", { fg = "#777777" })
+-- commit graph: one palette color per column, commit dot sakura; remotes lilac, tags gold
+set(0, "GitGraph1", { fg = "#ffb6c1" })
+set(0, "GitGraph2", { fg = "#c3a8d8" })
+set(0, "GitGraph3", { fg = "#8fc3c3" })
+set(0, "GitGraph4", { fg = "#9ecfa8" })
+set(0, "GitGraph5", { fg = "#d8b48f" })
+set(0, "GitGraph6", { fg = "#c49aa6" })
+set(0, "GitGraphCommit", { fg = "#ffb6c1", bold = true })
+set(0, "GitGraphAuthor", { fg = "#c49aa6" })
+set(0, "GitRemote", { fg = "#c3a8d8" })
+set(0, "GitTagName", { fg = "#d8cf9e" })
+-- commit kinds (logs, reflog, Head/Merge/Push): one meaning per color across the whole git UI
+set(0, "GitKindNew", { fg = "#9ecfa8" })     -- commit, amend, feat
+set(0, "GitKindFix", { fg = "#c49aa6" })     -- fix
+set(0, "GitKindMerge", { fg = "#8fc3c3" })   -- merge, pull
+set(0, "GitKindBranch", { fg = "#ffb6c1" })  -- checkout
+set(0, "GitKindReset", { fg = "#d98c8c" })   -- reset
+set(0, "GitKindRewrite", { fg = "#d8b48f" }) -- rebase, cherry-pick, revert
+set(0, "GitKindChore", { fg = "#777777" })   -- chore, docs, refactor, test, style, perf, ci, build
+-- conflicts: ours green, theirs lilac (status view); merge mode tints whole lines on a dark bg
+set(0, "GitOurs", { fg = "#9ecfa8" })
+set(0, "GitTheirs", { fg = "#c3a8d8" })
+set(0, "GitMergeOurs", { bg = "#1e2a22" })
+set(0, "GitMergeTheirs", { bg = "#26202e" })
+set(0, "GitMergeBase", { bg = "#222222" })
+set(0, "GitMergeMarker", { fg = "#777777", bold = true })
 -- popup menus (? / b / c / etc): keys in sakura, rest stays quiet
-set(0, "NeogitPopupActionKey", { fg = "#ffb6c1", bold = true })
-set(0, "NeogitPopupSwitchKey", { fg = "#ffb6c1", bold = true })
-set(0, "NeogitPopupOptionKey", { fg = "#ffb6c1", bold = true })
-set(0, "NeogitPopupConfigKey", { fg = "#ffb6c1", bold = true })
+set(0, "GitPopupActionKey", { fg = "#ffb6c1", bold = true })
+set(0, "GitPopupSwitchKey", { fg = "#ffb6c1", bold = true })
+set(0, "GitPopupOptionKey", { fg = "#ffb6c1", bold = true })
+set(0, "GitPopupConfigKey", { fg = "#ffb6c1", bold = true })
 -- selection: was light-grey block, now matches TelescopeSelection + sakura
-set(0, "NeogitActiveItem", { bg = "#1a1a1a", fg = "#ffb6c1", bold = true })
-set(0, "NeogitCursorLine", { bg = "#1a1a1a" })
-set(0, "NeogitChangeAdded", { fg = "#9ecfa8" })
-set(0, "NeogitChangeNewFile", { fg = "#9ecfa8" })
-set(0, "NeogitChangeModified", { fg = "#c49aa6" })
-set(0, "NeogitChangeDeleted", { fg = "#d98c8c" })
-set(0, "NeogitChangeRenamed", { fg = "#c3a8d8" })
-set(0, "NeogitChangeUpdated", { fg = "#d8b48f" })
-set(0, "NeogitChangeCopied", { fg = "#8fc3c3" })
-set(0, "NeogitChangeUnmerged", { fg = "#d8cf9e" })
+set(0, "GitActiveItem", { bg = "#1a1a1a", fg = "#ffb6c1", bold = true })
+set(0, "GitCursorLine", { bg = "#1a1a1a" })
+set(0, "GitChangeAdded", { fg = "#9ecfa8" })
+set(0, "GitChangeNewFile", { fg = "#9ecfa8" })
+set(0, "GitChangeModified", { fg = "#c49aa6" })
+set(0, "GitChangeDeleted", { fg = "#d98c8c" })
+set(0, "GitChangeRenamed", { fg = "#c3a8d8" })
+set(0, "GitChangeUpdated", { fg = "#d8b48f" })
+set(0, "GitChangeCopied", { fg = "#8fc3c3" })
+set(0, "GitChangeUnmerged", { fg = "#d8cf9e" })
 
 
 vim.cmd("hi StatusLine guibg=none")

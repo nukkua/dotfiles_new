@@ -428,7 +428,22 @@ local function edit_at(file, id)
   vim.fn.search('"' .. vim.fn.escape(id, "\\/.*$^~[]") .. '"')
 end
 
+-- JWT payload claims, nil for anything that isn't a JWT
+local function jwt(s)
+  local p = type(s) == "string" and s:match("^[%w_-]+%.([%w_-]+)%.[%w_-]*$")
+  if not p then return nil end
+  p = p:gsub("-", "+"):gsub("_", "/")
+  local ok, t = pcall(function() return vim.json.decode(vim.base64.decode(p .. ("="):rep(-#p % 4))) end)
+  return ok and type(t) == "table" and t or nil
+end
+
+local function expiry(exp)
+  local left = (tonumber(exp) or 0) - os.time()
+  return left > 0 and ("valid " .. math.ceil(left / 60) .. " min") or "expired"
+end
+
 function M.manager(dir, env)
+  local Script = require("nkjda.http_script")
   local cfgs = M.configs(dir, env)
   local ids = vim.tbl_keys(cfgs)
   table.sort(ids)
@@ -437,21 +452,60 @@ function M.manager(dir, env)
     "a add · e edit · p private · m remove · g get token · r refresh · R revoke · q close",
     "",
   }
+  local globals = {} -- line number -> global key
   for _, id in ipairs(ids) do
     local c, d = cfgs[id], cfgs[id].auth_data
     local status = "no token"
     if d and d.access_token then
-      local left = (tonumber(d.expires_at) or 0) - os.time()
-      status = left > 0 and ("valid " .. math.ceil(left / 60) .. " min") or "expired"
+      status = expiry(d.expires_at)
       if d.refresh_token then status = status .. " +refresh" end
     end
     table.insert(lines, ("%-24s %-22s %s"):format(id, c["Grant Type"] or "?", status))
   end
   if #ids == 0 then table.insert(lines, "(none — press a to add one)") end
+  local keys = vim.tbl_keys(Script.globals)
+  table.sort(keys)
+  if #keys > 0 then
+    vim.list_extend(lines, { "", "Globals (set by scripts) — m delete · r renew (re-run its request)" })
+    for _, k in ipairs(keys) do
+      local v, o, c = Script.globals[k], Script.origins[k] or {}, jwt(Script.globals[k])
+      -- Firebase/most IdPs: aud = project / client, iss = issuer domain
+      local project = c and (type(c.aud) == "string" and c.aud or c.iss) or ""
+      local status = c and (c.exp and expiry(c.exp) or "no exp") or vim.inspect(v):sub(1, 30)
+      table.insert(lines, ("%-24s %-40s %-18s %s"):format(k, o.host or "?", project, status))
+      globals[#lines] = k
+    end
+  end
 
   local buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   vim.bo[buf].modifiable = false
+  local ns = vim.api.nvim_create_namespace("nkjda.http_auth")
+  local function hl(i, s, e, group) vim.api.nvim_buf_set_extmark(buf, ns, i - 1, s, { end_col = e, hl_group = group }) end
+  for i, l in ipairs(lines) do
+    local id = l:match("^%S+")
+    if i == 1 then
+      hl(i, 0, #l, "HttpAuthTitle")
+    elseif i == 2 or l:match("^Globals") then
+      local dash = l:find(" — ", 1, true)
+      if dash then hl(i, 0, dash - 1, "HttpAuthTitle") end
+      hl(i, dash and dash - 1 or 0, #l, "Comment")
+      for s in (" " .. l):gmatch("%s()%a%f[%s]") do -- single-letter tokens are the keys
+        hl(i, s - 2, s - 1, "HttpAuthKey")
+      end
+    elseif globals[i] or (id and cfgs[id]) then
+      hl(i, 0, #id, "HttpAuthId")
+      local c = globals[i] and jwt(Script.globals[id])
+      local p = c and l:find(" " .. (type(c.aud) == "string" and c.aud or c.iss or "\0") .. " ", #id + 1, true)
+      if p then hl(i, p, l:find(" ", p + 1, true) - 1, "HttpAuthProject") end
+      for word, group in pairs({ valid = "HttpAuthValid", expired = "HttpAuthExpired", ["no token"] = "Comment", ["no exp"] = "Comment" }) do
+        local s, e = l:find(word .. "[^%s]*", 40, false)
+        if s then hl(i, s - 1, word == "valid" and l:find(" min", s, true) + 3 or e, group) end
+      end
+    elseif l:match("^%(none") then
+      hl(i, 0, #l, "Comment")
+    end
+  end
   local w = 0
   for _, l in ipairs(lines) do w = math.max(w, vim.fn.strdisplaywidth(l)) end
   local win = vim.api.nvim_open_win(buf, true, {
@@ -459,6 +513,8 @@ function M.manager(dir, env)
     width = w + 2, height = #lines,
     row = math.floor((vim.o.lines - #lines) / 2), col = math.floor((vim.o.columns - w) / 2),
   })
+  vim.wo[win].winhighlight = "FloatBorder:HttpAuthBorder,FloatTitle:HttpAuthTitle,CursorLine:HttpAuthCursor"
+  vim.wo[win].cursorline = true
   vim.api.nvim_win_set_cursor(win, { math.min(4, #lines), 0 })
   local function close() if vim.api.nvim_win_is_valid(win) then vim.api.nvim_win_close(win, true) end end
   local function current()
@@ -480,7 +536,13 @@ function M.manager(dir, env)
   map("q", close)
   map("<Esc>", close)
   map("g", act(M.acquire, "token acquired"))
-  map("r", act(M.refresh, "token refreshed"))
+  local refresh = act(M.refresh, "token refreshed")
+  map("r", function()
+    local k = globals[vim.api.nvim_win_get_cursor(win)[1]]
+    if not k then return refresh() end
+    close()
+    require("nkjda.http").renew(k)
+  end)
   map("R", act(M.revoke, "token revoked"))
   map("e", function()
     local c = current()
@@ -505,6 +567,13 @@ function M.manager(dir, env)
     end)
   end)
   map("m", function()
+    local k = globals[vim.api.nvim_win_get_cursor(win)[1]]
+    if k then
+      if vim.fn.confirm("Delete global " .. k .. "?", "&Yes\n&No", 2) ~= 1 then return end
+      close()
+      Script.unset(k)
+      return vim.notify("http: deleted global " .. k)
+    end
     local c = current()
     if not c or vim.fn.confirm("Remove auth config " .. c._id .. "?", "&Yes\n&No", 2) ~= 1 then return end
     close()

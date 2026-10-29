@@ -26,4 +26,5 @@ require("blink.cmp").setup({
 })
 
 require("luasnip").setup({ enable_autosnippets = true })
-require("luasnip.loaders.from_lua").load({ paths = "~/.config/nvim/snippets/" })
+-- lazy_load: only the current filetype's snippets, on FileType
+require("luasnip.loaders.from_lua").lazy_load({ paths = "~/.config/nvim/snippets/" })

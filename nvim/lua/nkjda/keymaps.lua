@@ -2,7 +2,12 @@
 -- LSP buffer-local maps stay in lsp.lua (LspAttach).
 
 -- helpers (loaded after plugins)
-local harpoon = _G._nkjda_harpoon or require("harpoon")
+-- harpoon loads on first ,-key instead of at startup (~4ms)
+local function harpoon()
+    local h = require("harpoon")
+    if not _G._nkjda_harpoon then h:setup(); _G._nkjda_harpoon = h end
+    return h
+end
 local load_competitest = _G._nkjda_load_competitest
 
 -- console.log / print helper
@@ -48,6 +53,16 @@ vim.keymap.set('n', '<C-j>n', '<cmd>cnext<CR>')
 vim.keymap.set("n", "<leader>tt", ":bot 12split +term<CR>")
 -- normal mode only: a terminal-mode <leader> map would delay every space typed into claude (<C-c><C-c> first)
 vim.keymap.set("n", "<leader>tc", function() require("nkjda.claude").toggle() end, { desc = "Toggle claude code split" })
+vim.keymap.set("n", "<leader>ts", function()
+    if not vim.env.TMUX then return vim.notify("not inside tmux", vim.log.levels.WARN) end
+    local items = vim.fn.systemlist({ "tmux", "list-sessions", "-F", "#{session_name}" })
+    for _, d in ipairs(vim.fn.globpath(vim.fn.expand("~/working"), "*/", false, true)) do
+        items[#items + 1] = vim.fn.fnamemodify(d, ":~:h")
+    end
+    require("nkjda.select").select(items, { prompt = "tmux" }, function(choice)
+        if choice then vim.system({ vim.fn.expand("~/scripts/working.sh"), choice }) end
+    end)
+end, { desc = "Switch/create tmux session" })
 vim.keymap.set("n", "<leader>td", function()
     local cwd = vim.fn.getcwd()
     local file = vim.fn.expand("~/todos/" .. os.date("%Y-%m-%d") .. ".md")
@@ -123,7 +138,11 @@ vim.keymap.set('n', '*', '*zz', { silent = true })
 vim.keymap.set('n', '#', '#zz', { silent = true })
 vim.keymap.set('n', 'g*', 'g*zz', { silent = true })
 vim.keymap.set('n', 'g#', 'g#zz', { silent = true })
-vim.cmd([[cnoremap <CR> <CR><C-c>zz]])
+-- center after :cmd / search; prompts (input()) get a plain <CR> so zz never leaks into the next prompt
+-- no raw <C-c> here: it printed "Type :qa…", which ui2 shows in a pager that eats the next <CR>
+vim.keymap.set("c", "<CR>", function()
+  return vim.fn.getcmdtype():match("[:/?]") and "<CR>zz" or "<CR>"
+end, { expr = true })
 
 -- fff
 vim.keymap.set('n', '<Space>f', function() require('fff').find_files() end, { desc = 'FFFind files' })
@@ -210,9 +229,9 @@ local file_cmds = {
     rust = "cargo check --message-format short",
     c = "g++ -std=c++23 -Wall -Wextra -Wshadow %:p:S -o %:p:r:S",
     cpp = "g++ -std=c++23 -Wall -Wextra -Wshadow %:p:S -o %:p:r:S",
-    javascript = "npx --loglevel=error eslint -f unix --quiet %:p:S",
-    typescript = "npx --loglevel=error eslint -f unix --quiet %:p:S",
-    vue = "npx --loglevel=error eslint -f unix --quiet %:p:S",
+    javascript = "npx --loglevel=error oxlint -f unix --quiet -D correctness -D suspicious -D perf -D pedantic %:p:S",
+    typescript = "npx --loglevel=error oxlint -f unix --quiet -D correctness -D suspicious -D perf -D pedantic %:p:S",
+    vue = "npx --loglevel=error oxlint -f unix --quiet -D correctness -D suspicious -D perf -D pedantic %:p:S",
 }
 
 vim.keymap.set("n", "<leader>cr", function()
@@ -226,15 +245,15 @@ vim.keymap.set("n", "<leader>cf", function()
 end, { desc = "Check file" })
 
 -- harpoon
-vim.keymap.set("n", ",,", function() harpoon:list():add() end)
-vim.keymap.set("n", ",e", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end)
-vim.keymap.set("n", ",s", function() harpoon:list():select(1) end)
-vim.keymap.set("n", ",n", function() harpoon:list():select(2) end)
-vim.keymap.set("n", ",t", function() harpoon:list():select(3) end)
-vim.keymap.set("n", ",r", function() harpoon:list():select(4) end)
-vim.keymap.set("n", ",w", function() harpoon:list():select(5) end)
-vim.keymap.set("n", ",m", function() harpoon:list():prev() end)
-vim.keymap.set("n", ",h", function() harpoon:list():next() end)
+vim.keymap.set("n", ",,", function() harpoon():list():add() end)
+vim.keymap.set("n", ",e", function() harpoon().ui:toggle_quick_menu(harpoon():list()) end)
+vim.keymap.set("n", ",s", function() harpoon():list():select(1) end)
+vim.keymap.set("n", ",n", function() harpoon():list():select(2) end)
+vim.keymap.set("n", ",t", function() harpoon():list():select(3) end)
+vim.keymap.set("n", ",r", function() harpoon():list():select(4) end)
+vim.keymap.set("n", ",w", function() harpoon():list():select(5) end)
+vim.keymap.set("n", ",m", function() harpoon():list():prev() end)
+vim.keymap.set("n", ",h", function() harpoon():list():next() end)
 
 -- diagnostics / competitest
 vim.keymap.set('n', '<leader>d', vim.diagnostic.open_float, { noremap = true, silent = true })
@@ -249,242 +268,7 @@ vim.keymap.set("n", "<leader>as", "<cmd>CompetiTest add_testcase<CR>", { desc = 
 
 
 
--- neogit replaces current buffer -> <leader>gg
-vim.keymap.set("n", "<leader>gg", function() require("neogit").open() end, { desc = "Neogit status" })
-
--- :Pr — PR + merge status for the current branch, lazygit-style (needs `gh` auth)
-local function _str(v, fb)
-  if v == nil or v == vim.NIL then return fb or "" end
-  return tostring(v)
-end
-
-local function _ci_summary(rollup)
-  if type(rollup) ~= "table" then rollup = {} end
-  local fail, pending = 0, 0
-  for _, c in ipairs(rollup) do
-    if c.conclusion == "FAILURE" or c.conclusion == "TIMED_OUT" or c.conclusion == "CANCELLED"
-      or c.state == "FAILURE" or c.state == "ERROR" then
-      fail = fail + 1
-    elseif c.status ~= "COMPLETED" and c.state ~= "SUCCESS" then
-      pending = pending + 1
-    end
-  end
-  if fail > 0 then return fail .. " failing", "PrClosed" end
-  if pending > 0 then return pending .. " running", "PrWarn" end
-  return "passing", "PrOpen"
-end
-
--- GitHub web (Primer): open green, merged purple, closed red, draft gray
-for name, fg in pairs({ PrOpen = "#9ecfa8", PrMerged = "#c3a8d8", PrClosed = "#d98c8c", PrDraft = "#8a8a8a", PrWarn = "#d8b48f", PrBranch = "#ffb6c1" }) do
-  vim.api.nvim_set_hl(0, name, { fg = fg })
-end
-local _pr_state_hl = { OPEN = "PrOpen", MERGED = "PrMerged", CLOSED = "PrClosed", DRAFT = "PrDraft" }
-
-local function run(cmd, cb)
-  vim.system(cmd, { text = true }, vim.schedule_wrap(cb))
-end
-
--- finds the integration base branch, then calls cb(base)
-local function find_base(cb)
-  local candidates = { "origin/develop", "origin/main" }
-  local function try(i)
-    if i > #candidates then
-      run({ "git", "rev-parse", "--abbrev-ref", "origin/HEAD" }, function(r)
-        local b = vim.trim(r.stdout or "")
-        cb((r.code == 0 and b ~= "") and b or "origin/develop")
-      end)
-      return
-    end
-    run({ "git", "rev-parse", "--verify", "--quiet", candidates[i] }, function(r)
-      if r.code == 0 then cb(candidates[i]) else try(i + 1) end
-    end)
-  end
-  try(1)
-end
-
-vim.api.nvim_create_user_command("Pr", function()
-  local branch, pr_res
-  local pending = 2
-  local function finish()
-    pending = pending - 1
-    if pending > 0 then return end
-    branch = branch or "?"
-    local ok, pr = pcall(vim.json.decode, pr_res.stdout or "")
-
-    if not ok or type(pr) ~= "table" or not pr.number then
-      return find_base(function(base)
-        run({ "git", "merge-base", "--is-ancestor", "HEAD", base }, function(r)
-          local merged = r.code == 0
-          vim.api.nvim_echo({
-            { branch .. ": no PR · ", "Comment" },
-            { (merged and "merged into " or "not merged into ") .. base,
-              merged and "PrOpen" or "PrWarn" },
-          }, true, {})
-        end)
-      end)
-    end
-
-    local state = pr.isDraft == true and "DRAFT" or _str(pr.state, "?")
-    local ci, ci_hl = _ci_summary(pr.statusCheckRollup)
-    vim.api.nvim_echo({
-      { "#" .. _str(pr.number, "?") .. " ", "Comment" },
-      { _str(state, "?"), _str(_pr_state_hl[state], "Normal") },
-      { "  " .. _str(pr.title), "Normal" },
-      { "  " .. _str(branch, "?"), "PrBranch" },
-      { "\n" .. _str(pr.mergeable, "?") .. " · review "
-        .. _str(pr.reviewDecision, "none") .. " · CI ", "Comment" },
-      { _str(ci), _str(ci_hl, "Normal") },
-    }, true, {})
-  end
-  run({ "git", "rev-parse", "--abbrev-ref", "HEAD" }, function(r)
-    branch = vim.trim(r.stdout or "")
-    if branch == "" then branch = nil end
-    finish()
-  end)
-  run({ "gh", "pr", "view", "--json",
-    "number,state,title,isDraft,mergeable,reviewDecision,statusCheckRollup" },
-    function(r)
-      pr_res = r
-      finish()
-    end)
-end, { desc = "PR status for current branch" })
-
-vim.api.nvim_create_user_command("Prs", function(opts)
-  run({ "gh", "pr", "list", "--json",
-    "number,title,author,headRefName,isDraft,reviewDecision,statusCheckRollup",
-    "--limit", opts.args ~= "" and opts.args or "30" },
-    function(r)
-      local ok, prs = pcall(vim.json.decode, r.stdout or "")
-      if not ok or type(prs) ~= "table" or #prs == 0 then
-        return vim.api.nvim_echo({ { "no PRs", "Comment" } }, true, {})
-      end
-      local chunks = {}
-      for i, pr in ipairs(prs) do
-        local state = pr.isDraft == true and "DRAFT" or _str(pr.state, "?")
-        local ci, ci_hl = _ci_summary(pr.statusCheckRollup)
-        local nl = i > 1 and "\n" or ""
-        local login = type(pr.author) == "table" and _str(pr.author.login, "?") or "?"
-        table.insert(chunks, { nl .. "#" .. _str(pr.number, "?") .. " ", "Comment" })
-        table.insert(chunks, { _str(state, "?"), _str(_pr_state_hl[state], "Normal") })
-        table.insert(chunks, { "  " .. _str(pr.title), "Normal" })
-        table.insert(chunks, { "  " .. _str(pr.headRefName), "PrBranch" })
-        table.insert(chunks, { "  @" .. login, "Comment" })
-        table.insert(chunks, { " · " .. _str(pr.reviewDecision, "no review"), "Comment" })
-        table.insert(chunks, { " · " .. _str(ci), _str(ci_hl, "Normal") })
-      end
-      vim.api.nvim_echo(chunks, true, {})
-    end)
-end, { nargs = "?", desc = "List PRs with status" })
-
--- neogit status: PR/merge state as a virtual line under Push:
--- neogit redraws the whole buffer on refresh (wiping extmarks), so redraw from cache, then refetch
-local _pr_ns = vim.api.nvim_create_namespace("neogit_pr_state")
-local _pr_cache = {} -- branch -> chunks
-local function _pr_draw(buf, chunks)
-  if not vim.api.nvim_buf_is_valid(buf) then return end
-  vim.api.nvim_buf_clear_namespace(buf, _pr_ns, 0, -1)
-  local row -- under Push:, or Head: when the branch has no upstream
-  for i, l in ipairs(vim.api.nvim_buf_get_lines(buf, 0, 10, false)) do
-    if l:match("^%s*Push:") then row = i - 1 break end
-    if l:match("^%s*Head:") then row = i - 1 end
-  end
-  if row then vim.api.nvim_buf_set_extmark(buf, _pr_ns, row, 0, { virt_lines = { chunks } }) end
-end
-vim.api.nvim_create_autocmd("User", {
-  pattern = "NeogitStatusRefreshed",
-  callback = function()
-    local buf = vim.api.nvim_get_current_buf()
-    if vim.bo[buf].filetype ~= "NeogitStatus" then
-      for _, b in ipairs(vim.api.nvim_list_bufs()) do
-        if vim.bo[b].filetype == "NeogitStatus" then buf = b end
-      end
-    end
-    run({ "git", "rev-parse", "--abbrev-ref", "HEAD" }, function(br)
-      local branch = vim.trim(br.stdout or "")
-      if _pr_cache[branch] then _pr_draw(buf, _pr_cache[branch]) end
-      local label = { "PR:       ", "NeogitSubtleText" }
-      local function show(chunks)
-        table.insert(chunks, 1, label)
-        _pr_cache[branch] = chunks
-        _pr_draw(buf, chunks)
-      end
-      run({ "gh", "pr", "view", "--json", "number,state,isDraft,title" }, function(r)
-        local ok, pr = pcall(vim.json.decode, r.stdout or "")
-        if ok and type(pr) == "table" and pr.number then
-          local state = pr.isDraft == true and "DRAFT" or _str(pr.state, "?")
-          return show({
-            { "#" .. _str(pr.number, "?") .. " ", "Comment" },
-            { state, _str(_pr_state_hl[state], "Normal") },
-            { "  " .. _str(pr.title), "Comment" },
-          })
-        end
-        find_base(function(base)
-          run({ "git", "merge-base", "--is-ancestor", "HEAD", base }, function(m)
-            local merged = m.code == 0
-            show({
-              { "no PR · ", "Comment" },
-              { (merged and "merged into " or "not merged into ") .. base, merged and "PrMerged" or "PrWarn" },
-            })
-          end)
-        end)
-      end)
-    end)
-  end,
-})
-
-vim.keymap.set("n", "<leader>gp", "<cmd>Pr<CR>", { desc = "PR status" })
-vim.keymap.set("n", "<leader>gl", "<cmd>Prs<CR>", { desc = "List PRs" })
-
-vim.keymap.set("n", "<leader>gn", function()
-  vim.ui.input({ prompt = "Reviewer: ", default = "juanrdlo" }, function(reviewer)
-    if not reviewer or reviewer == "" then return end
-    vim.notify("creating PR…") -- gh is network-bound; show it's working
-    vim.system(
-      { "gh", "pr", "create", "--fill", "--reviewer", reviewer },
-      { text = true },
-      vim.schedule_wrap(function(res)
-        -- gh fails with "a pull request for branch ... already exists:\n<url>"
-        local existing = res.code ~= 0 and (res.stderr or ""):match("already exists:%s*(https://%S+)")
-        if res.code ~= 0 and not existing then
-          vim.notify(res.stderr, vim.log.levels.ERROR)
-          return
-        end
-        local url = existing or vim.trim(res.stdout)
-        vim.fn.setreg("+", url)
-        vim.notify((existing and "PR already exists" or "PR created") .. ", URL copied:\n" .. url)
-      end)
-    )
-  end)
-end, { desc = "Create PR and copy URL" })
-vim.keymap.set("n", "<leader>gs", function()
-  vim.system(
-    { "gh", "pr", "view", "--json", "url", "--jq", ".url" },
-    { text = true },
-    vim.schedule_wrap(function(res)
-      if res.code ~= 0 then
-        vim.notify(res.stderr, vim.log.levels.ERROR)
-        return
-      end
-      local url = vim.trim(res.stdout)
-      vim.fn.setreg("+", url)
-      vim.ui.open(url)
-      vim.notify("PR URL copied:\n" .. url)
-    end)
-  )
-end, { desc = "See PR and copy URL" })
-vim.keymap.set("n", "<leader>gc", function()
-  if vim.fn.confirm("Close the PR for this branch?", "&Yes\n&No", 2) ~= 1 then
-    return
-  end
-  vim.system(
-    { "gh", "pr", "close" },
-    { text = true },
-    vim.schedule_wrap(function(res)
-      if res.code ~= 0 then
-        vim.notify(res.stderr, vim.log.levels.ERROR)
-        return
-      end
-      vim.notify("PR closed")
-    end)
-  )
-end, { desc = "Close PR" })
+-- git status (lua/nkjda/git.lua) replaces current buffer; ? inside lists keys, O = PRs
+vim.keymap.set("n", "<leader>gg", function() require("nkjda.git").open() end, { desc = "Git status" })
+-- :Git <args> — one-off git command, output in a notification (or a buffer when long)
+vim.api.nvim_create_user_command("Git", function(o) require("nkjda.git").command(o.args) end, { nargs = "*", desc = "Run git" })
