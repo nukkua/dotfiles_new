@@ -32,13 +32,23 @@ vim.api.nvim_create_autocmd("LspAttach", {
 })
 
 require("mason").setup()
-require("mason-lspconfig").setup({
+-- ensure_installed walks the registry; do it after the first screen
+vim.schedule(function() require("mason-lspconfig").setup({
   ensure_installed = {
     "clangd", "lua_ls", "eslint", "rust_analyzer", "zls",
     "vtsls", "vue_ls", "tailwindcss", "gopls",
   },
   automatic_enable = false,
-})
+}) end)
+
+-- lspconfig's tailwindcss turns on file watching; without inotifywait nvim falls back to a
+-- synchronous recursive scan (node_modules included) that freezes the editor for ~1.3s per open
+-- with inotify-tools installed the watch runs in a separate process, so keep it on
+if vim.fn.executable("inotifywait") == 0 then
+  vim.lsp.config("tailwindcss", {
+    capabilities = { workspace = { didChangeWatchedFiles = { dynamicRegistration = false } } },
+  })
+end
 
 vim.lsp.config("clangd", { init_options = { fallbackFlags = { "-std=c++23" } } })
 
@@ -61,6 +71,11 @@ vim.lsp.config("rust_analyzer", {
 vim.lsp.config("vtsls", {
   filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
   settings = {
+    typescript = {
+      -- no second "syntax" tsserver (~240MB) and no typingsInstaller (~100MB, npm fetches @types)
+      tsserver = { useSyntaxServer = "never" },
+      disableAutomaticTypeAcquisition = true,
+    },
     vtsls = {
       tsserver = {
         globalPlugins = {

@@ -17,7 +17,6 @@ vim.pack.add({
     { src = "https://github.com/L3MON4D3/LuaSnip" },
     { src = "https://github.com/Saghen/blink.cmp",                           version = vim.version.range("*") },
     { src = "https://github.com/dmtrKovalenko/fff" },
-    { src = "https://github.com/NeogitOrg/neogit" },
 })
 
 -- fff binary build on install/update
@@ -66,9 +65,7 @@ vim.api.nvim_create_autocmd("FileType", {
     callback = function() load_competitest() end,
 })
 
--- harpoon / oil / fidget
-local harpoon = require("harpoon")
-harpoon:setup()
+-- oil / fidget (harpoon is set up on first use, see keymaps.lua)
 
 require("oil").setup({
     view_options = { show_hidden = true, natural_order = "fast" },
@@ -91,17 +88,22 @@ require("fidget").setup {
 }
 
 -- treesitter parsers (incl. html/xml for autotag) + highlight
-require("nvim-treesitter").install({
+-- install check is off the startup path; parsers already on disk are a no-op
+vim.schedule(function() require("nvim-treesitter").install({
     "c", "cpp", "lua", "rust", "html", "xml",
     "javascript", "typescript", "vue", "astro", "svelte", "go", "http",
-})
+}) end)
 vim.api.nvim_create_autocmd("FileType", {
     pattern = {
         "c", "cpp", "lua", "rust", "html", "xml",
         "javascript", "typescript", "javascriptreact", "typescriptreact",
         "vue", "astro", "svelte", "go", "http",
     },
-    callback = function() vim.treesitter.start() end,
+    -- minified bundles (dist/*.js) block the editor ~0.5s per 800KB in the parser; skip them
+    callback = function(ev)
+        if vim.fn.getfsize(ev.file) > 512 * 1024 then return end
+        vim.treesitter.start()
+    end,
 })
 
 -- tag rename/close via treesitter
@@ -113,82 +115,4 @@ require("nvim-ts-autotag").setup()
 -- sa add, sd delete, sr replace (e.g. sr t div<CR> swaps both tags), sF/sf jump
 require("mini.surround").setup()
 
--- neogit (replace buffer, not tab) — d on a file opens plain vimdiff vs HEAD, no plugins
--- ponytail: <cfile> + git plumbing only; untracked files have no HEAD to diff, so they warn
-local function _neogit_vimdiff()
-  local git_dir = vim.b.neogit_git_dir
-  local line = vim.api.nvim_get_current_line()
-  local file = line:match("^%s*%S+%s+(.-)%s*$") or vim.fn.expand("<cfile>")
-  if not git_dir or git_dir == "" or file == "" then
-    vim.notify("no file under cursor", vim.log.levels.WARN)
-    return
-  end
-  local root = vim.fn.systemlist({ "git", "--git-dir=" .. git_dir, "rev-parse", "--show-toplevel" })[1]
-  if not root or root == "" then return end
-  local rel = file:gsub("^" .. vim.pesc(root .. "/"), "")
-  vim.fn.system({ "git", "-C", root, "cat-file", "-e", "HEAD:" .. rel })
-  if vim.v.shell_error ~= 0 then
-    vim.notify("untracked: nothing in HEAD to diff", vim.log.levels.WARN)
-    return
-  end
-  -- ponytail: one diff at a time; repeat-d replaces instead of stacking splits
-  vim.cmd("diffoff!")
-  for _, b in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.b[b].neogit_head_scratch then vim.api.nvim_buf_delete(b, { force = true }) end
-  end
-  local abs = root .. "/" .. rel
-  if vim.fn.filereadable(abs) == 1 then
-    vim.cmd("edit " .. vim.fn.fnameescape(abs))
-  else
-    vim.cmd("enew") -- deleted in worktree: empty side still diffs vs HEAD
-    vim.bo.buftype = "nofile"
-  end
-  vim.b.neogit_work_diff = true
-  local work_win = vim.api.nvim_get_current_win()
-  local ft = vim.bo.filetype
-  vim.cmd("diffthis")
-  vim.api.nvim_set_option_value("winbar", "%#Comment# working %*", { win = work_win })
-  local head = vim.fn.systemlist({ "git", "-C", root, "show", "HEAD:" .. rel })
-  vim.cmd("vnew")
-  local head_win = vim.api.nvim_get_current_win()
-  vim.api.nvim_buf_set_lines(0, 0, -1, false, head)
-  pcall(vim.api.nvim_buf_set_name, 0, "HEAD:" .. rel)
-  vim.bo.filetype = ft
-  vim.bo.buftype = "nofile"
-  vim.bo.bufhidden = "wipe"
-  vim.bo.buflisted = false
-  vim.bo.swapfile = false
-  vim.bo.readonly = true
-  vim.bo.modifiable = false
-  vim.b.neogit_head_scratch = true
-  vim.cmd("diffthis")
-  vim.api.nvim_set_option_value("winbar", "%#Comment# head %*", { win = head_win })
-end
-require("neogit").setup({
-  kind = "replace",
-  mappings = {
-    popup = { ["d"] = false, ["D"] = "DiffPopup" }, -- d is vimdiff now; popup moves to D
-    status = { ["d"] = _neogit_vimdiff },
-  },
-})
--- :DiffOff closes the diff (HEAD split + labels) and goes back to neogit
-vim.api.nvim_create_user_command("DiffOff", function()
-  local closed = false
-  vim.cmd("diffoff!")
-  for _, w in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-    local b = vim.api.nvim_win_get_buf(w)
-    if vim.b[b].neogit_head_scratch or vim.b[b].neogit_work_diff then
-      vim.api.nvim_set_option_value("winbar", "", { win = w })
-      if vim.b[b].neogit_head_scratch then
-        vim.api.nvim_buf_delete(b, { force = true })
-      else
-        vim.b[b].neogit_work_diff = nil
-      end
-      closed = true
-    end
-  end
-  if closed then require("neogit").open() end
-end, { desc = "Close diff, back to Neogit" })
 
--- expose harpoon for keymaps.lua
-_G._nkjda_harpoon = harpoon

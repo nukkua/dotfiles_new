@@ -9,26 +9,35 @@
 
 local M = {}
 
-local store = vim.fn.stdpath("data") .. "/http/globals.json"
-M.globals = (function()
-  local f = io.open(store)
+local dir = vim.fn.stdpath("data") .. "/http/"
+local function read(p)
+  local f = io.open(p)
   if not f then return {} end
   local ok, t = pcall(vim.json.decode, f:read("*a"))
   f:close()
   return ok and type(t) == "table" and t or {}
-end)()
+end
+M.globals = read(dir .. "globals.json")
+M.origins = read(dir .. "origins.json") -- global -> { file, name, line, host } of the request that set it
 
 local function save()
-  vim.fn.mkdir(vim.fs.dirname(store), "p")
-  local f = io.open(store, "w")
-  if f then
-    f:write(vim.json.encode(next(M.globals) and M.globals or vim.empty_dict()))
-    f:close()
+  vim.fn.mkdir(dir, "p")
+  for name, t in pairs({ ["globals.json"] = M.globals, ["origins.json"] = M.origins }) do
+    local f = io.open(dir .. name, "w")
+    if f then
+      f:write(vim.json.encode(next(t) and t or vim.empty_dict()))
+      f:close()
+    end
   end
 end
 
 function M.clear()
-  M.globals = {}
+  M.globals, M.origins = {}, {}
+  save()
+end
+
+function M.unset(k)
+  M.globals[k], M.origins[k] = nil, nil
   save()
 end
 
@@ -145,6 +154,7 @@ end
 -- script = { code = "...", file = "path" }, ctx = { request = {...}, response = {...}?, vars, env, dir }
 local function run(script, ctx)
   local code, lang = script.code, "js"
+  local before = vim.deepcopy(M.globals)
   if script.file then
     local p = script.file:match("^/") and script.file or (ctx.dir .. "/" .. script.file)
     local f = io.open(p)
@@ -175,6 +185,10 @@ local function run(script, ctx)
     end
     M.globals = out.globals
     vars, logs, result = out.vars, out.logs, out.result ~= vim.NIL and out.result or nil
+  end
+  for k in pairs(vim.tbl_extend("force", {}, before, M.globals)) do
+    if M.globals[k] == nil then M.origins[k] = nil
+    elseif ctx.origin and not vim.deep_equal(before[k], M.globals[k]) then M.origins[k] = ctx.origin end
   end
   save()
   return vars, logs, result

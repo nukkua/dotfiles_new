@@ -497,6 +497,7 @@ local function finish(req, e, res, dir)
   for _, sc in ipairs(req.post) do
     local _, l = Script.run(sc, {
       request = req, vars = {}, env = env_vars(dir), dir = dir,
+      origin = { file = e.file, name = req.name, line = req.line, host = req.url:match("^%a[%w+.-]*://([^/?#]+)") },
       response = { body = e.body, status = tonumber(e.status:match("^HTTP/%S+ (%d+)")), headers = e.headers },
     })
     e.script_output = vim.list_extend(e.script_output or {}, l)
@@ -542,7 +543,7 @@ local function send(blocks, buf)
     if S.queue ~= queue then return end
     local r = table.remove(queue, 1)
     if not r then return end
-    local e = { method = r.method or "SCRIPT", url = r.url or r.name or "", buf = buf, line = r.line, pending = true, headers = {}, body = "" }
+    local e = { method = r.method or "SCRIPT", url = r.url or r.name or "", buf = buf, file = vim.api.nvim_buf_get_name(buf), line = r.line, pending = true, headers = {}, body = "" }
     table.insert(S.history, e)
     S.idx = #S.history
     render()
@@ -566,7 +567,8 @@ local function send(blocks, buf)
       vim.cmd("redraw") -- scripts block (node :wait()), so paint the ⏳ line first
       local base = { method = r.method, url = r.url, headers = r.headers, body = table.concat(r.body, "\n") }
       for _, sc in ipairs(r.pre) do
-        local v, l, res = Script.run(sc, { request = base, vars = doc.vars, env = env_vars(dir), dir = dir })
+        local v, l, res = Script.run(sc, { request = base, vars = doc.vars, env = env_vars(dir), dir = dir,
+          origin = { file = e.file, name = r.name, line = r.line } })
         req_vars = vim.tbl_extend("force", req_vars, v)
         vim.list_extend(logs, l)
         result = res or result
@@ -644,6 +646,24 @@ function M.replay()
     return vim.notify("Nothing to replay", vim.log.levels.WARN)
   end
   send(S.last.blocks, S.last.buf)
+end
+
+-- re-send the request whose script last set global `key` (found by name, else by line)
+function M.renew(key)
+  local o = Script.origins[key]
+  if not o or not o.file or o.file == "" then
+    return vim.notify("http: no known request sets " .. key .. ", run it once first", vim.log.levels.WARN)
+  end
+  local buf = vim.fn.bufadd(o.file)
+  vim.fn.bufload(buf)
+  local blocks = M.parse_doc(vim.api.nvim_buf_get_lines(buf, 0, -1, false)).blocks
+  local pick
+  for _, b in ipairs(blocks) do
+    if o.name and b.name == o.name then pick = b; break end
+    if not pick and b.s <= o.line and o.line <= b.e then pick = b end
+  end
+  if not pick then return vim.notify("http: request for " .. key .. " not found in " .. o.file, vim.log.levels.WARN) end
+  send({ pick }, buf)
 end
 
 function M.scratchpad()
