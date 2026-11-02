@@ -268,7 +268,7 @@ vim.keymap.set("n", "<leader>as", "<cmd>CompetiTest add_testcase<CR>", { desc = 
 
 
 
--- git status (lua/nkjda/git.lua) replaces current buffer; ? inside lists keys, O = PRs
-vim.keymap.set("n", "<leader>gg", function() require("nkjda.git").open() end, { desc = "Git status" })
+-- git status (petal.nvim, ~/projects/petal.nvim) replaces current buffer; ? inside lists keys, O = PRs
+vim.keymap.set("n", "<leader>gg", "<cmd>Petal<cr>", { desc = "Git status" })
 -- :Git <args> — one-off git command, output in a notification (or a buffer when long)
-vim.api.nvim_create_user_command("Git", function(o) require("nkjda.git").command(o.args) end, { nargs = "*", desc = "Run git" })
+vim.api.nvim_create_user_command("Git", function(o) require("petal").command(o.args) end, { nargs = "*", desc = "Run git" })

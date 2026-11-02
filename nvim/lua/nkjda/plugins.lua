@@ -19,6 +19,19 @@ vim.pack.add({
     { src = "https://github.com/dmtrKovalenko/fff" },
 })
 
+-- petal: local checkout while developing; once on GitHub, move it into vim.pack.add above
+vim.opt.rtp:prepend(vim.fn.expand("~/projects/petal.nvim"))
+require("petal").setup({
+    reviewers = { "juanrdlo" },
+    -- <c-c><c-s> in the commit buffer: claude reads the staged diff and writes the message
+    commit_suggest = { "claude", "-p", "--model", "haiku",
+        "Write ONE git commit message for the staged diff on stdin, Conventional Commits style: "
+        .. "type(scope): subject. Types: feat fix refactor docs style test perf build ci chore revert; "
+        .. "scope optional, lowercase. Subject: imperative, lowercase, max 50 chars, no period. "
+        .. "No body unless the why is truly non-obvious, then one blank line and at most 2 short lines. "
+        .. "Output only the message: no quotes, no code fences, no Co-Authored-By or other trailers." },
+})
+
 -- fff binary build on install/update
 vim.api.nvim_create_autocmd('PackChanged', {
     callback = function(ev)

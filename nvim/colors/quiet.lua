@@ -112,7 +112,7 @@ set(0, "HttpAuthValid", { fg = "#9ecfa8" })
 set(0, "HttpAuthExpired", { fg = "#d98c8c" })
 set(0, "HttpAuthCursor", { bg = "#1a1a1a" })
 
--- git status (lua/nkjda/git.lua): simple git colors (everything else stays quiet)
+-- git status (petal.nvim): simple git colors (everything else stays quiet)
 -- staged/unstaged/untracked entries link to these base groups, so this covers all three
 set(0, "GitSectionHeader", { fg = "#ffb6c1", bold = true })
 -- Head: branch you are on — bright sakura; Head variant gets dark pill so current pops in branch lists
