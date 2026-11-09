@@ -97,6 +97,15 @@ set(0, "markdownCode",     { fg = "#c8c8c8" })
 set(0, "FidgetNormal", { bg = "NONE" })
 set(0, "FidgetTitle", { bg = "NONE" })
 set(0, "FidgetTask", { bg = "NONE" })
+-- notification icons/annotes (fidget uses Question, sepal's ● DiagnosticInfo): sakura, not the default cyan
+set(0, "Question", { fg = "#ffb6c1" })
+set(0, "DiagnosticInfo", { fg = "#ffb6c1" })
+-- sepal's conversation picker (<leader>al): titles + matched letters sakura, selected row like other selections
+set(0, "SepalPickHeader", { fg = "#dddddd", bold = true })
+set(0, "SepalPickTitle", { fg = "#ffb6c1" })
+set(0, "SepalPickAge", { fg = "#777777", italic = true })
+set(0, "SepalPickMatch", { fg = "#ffb6c1", bold = true })
+set(0, "SepalPickSelected", { bg = "#2b2b2b" })
 
 -- Oil: sakura dirs only
 set(0, "OilDir", { fg = "#ffb6c1" })

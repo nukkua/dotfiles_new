@@ -268,7 +268,14 @@ vim.keymap.set("n", "<leader>as", "<cmd>CompetiTest add_testcase<CR>", { desc = 
 
 
 
--- git status (petal.nvim, ~/projects/petal.nvim) replaces current buffer; ? inside lists keys, O = PRs
+-- git status (petal.nvim) replaces current buffer; ? inside lists keys, O = PRs
 vim.keymap.set("n", "<leader>gg", "<cmd>Petal<cr>", { desc = "Git status" })
 -- :Git <args> — one-off git command, output in a notification (or a buffer when long)
 vim.api.nvim_create_user_command("Git", function(o) require("petal").command(o.args) end, { nargs = "*", desc = "Run git" })
+
+-- agent side pane (sepal.nvim): toggle keeps the chat, new restarts it, spec writes a spec for it
+vim.keymap.set("n", "<leader>aa", "<cmd>Sepal<cr>", { desc = "Agent: toggle" })
+vim.keymap.set("n", "<leader>an", "<cmd>Sepal new<cr>", { desc = "Agent: new chat" })
+vim.keymap.set("n", "<leader>ai", "<cmd>Sepal spec<cr>", { desc = "Agent: implement a spec" })
+vim.keymap.set("x", "<leader>ai", ":Sepal spec<cr>", { desc = "Agent: implement a spec with the selection" })
+vim.keymap.set("n", "<leader>al", "<cmd>Sepal resume<cr>", { desc = "Agent: find a conversation and resume it" })

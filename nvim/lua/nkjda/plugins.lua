@@ -17,19 +17,41 @@ vim.pack.add({
     { src = "https://github.com/L3MON4D3/LuaSnip" },
     { src = "https://github.com/Saghen/blink.cmp",                           version = vim.version.range("*") },
     { src = "https://github.com/dmtrKovalenko/fff" },
+    { src = "https://github.com/nukkua/petal.nvim" },
+    { src = "https://github.com/nukkua/sepal.nvim" }, -- CLI agent in a split, see keymaps.lua
 })
 
--- petal: local checkout while developing; once on GitHub, move it into vim.pack.add above
-vim.opt.rtp:prepend(vim.fn.expand("~/projects/petal.nvim"))
 require("petal").setup({
     reviewers = { "juanrdlo" },
     -- <c-c><c-s> in the commit buffer: claude reads the staged diff and writes the message
-    commit_suggest = { "claude", "-p", "--model", "haiku",
+    -- --no-session-persistence: not saved as a chat, so `claude -c` and :Sepal resume never pick it up
+    commit_suggest = { "claude", "-p", "--model", "haiku", "--no-session-persistence",
         "Write ONE git commit message for the staged diff on stdin, Conventional Commits style: "
         .. "type(scope): subject. Types: feat fix refactor docs style test perf build ci chore revert; "
         .. "scope optional, lowercase. Subject: imperative, lowercase, max 50 chars, no period. "
         .. "No body unless the why is truly non-obvious, then one blank line and at most 2 short lines. "
         .. "Output only the message: no quotes, no code fences, no Co-Authored-By or other trailers." },
+})
+
+require("sepal").setup({
+    -- <c-c><c-s> in a spec (<leader>ai): opus reads the idea + files on stdin (and the files) and writes the spec.
+    -- --no-session-persistence: never the chat `claude -c` continues; --tools: it reads, it doesn't edit
+    spec_suggest = { "claude", "-p", "--model", "claude-opus-5-5", "--effort", "medium",
+        "--no-session-persistence", "--tools=Read,Grep,Glob",
+        "Turn the rough idea on stdin into a spec for a coding agent working in this repo. "
+        .. "Read the listed files (and only what else you need) so the spec matches the real code. "
+        .. "Output only the spec, plain text, no code fences, exactly this shape:\n"
+        .. "Scope: <the function, module or feature>\n"
+        .. "Goal: <what done looks like, one or two sentences>\n\n"
+        .. "Constraints:\n- <a requirement or edge case that must hold>\n\n"
+        .. "Files:\n- @<path>\n\n"
+        .. "Every line must add something the others don't: no filler, no restating the goal, "
+        .. "no step-by-step plan unless a step is itself a constraint. 2-6 constraints. "
+        .. "Keep the user's files; add one only if the code shows it must change. "
+        .. "Your whole output is pasted to the agent as the spec: nothing before Scope: or after the Files list, "
+        .. "no notes, questions or ---. If the idea is vague, write the most likely spec anyway. "
+        .. "If the input has a Selection: block (a header line and a ``` code block), copy it unchanged "
+        .. "right above Files: and make the spec about that code." },
 })
 
 -- fff binary build on install/update
