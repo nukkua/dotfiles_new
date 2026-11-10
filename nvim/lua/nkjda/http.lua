@@ -403,7 +403,8 @@ local function render()
       local active = S.view == views[k]
       table.insert(tabs, (active and "%#TabLineSel#" or "%#TabLine#") .. " " .. views[k] .. " (" .. k .. ") ")
     end
-    local info = e and not e.pending and ("%#Normal#  " .. (e.status or "error") .. " · " .. (e.ms or 0) .. " ms") or ""
+    local info = e and not e.pending and ("%#Normal#  " .. (e.status or "error") .. " · " .. (e.ms or 0) .. " ms"
+      .. (e.post_pending and " · ⏳ script" or "")) or ""
     vim.wo[win].winbar = table.concat(tabs) .. info .. ("%=[" .. S.idx .. "/" .. #S.history .. "] ? help")
   end
 end
@@ -470,7 +471,29 @@ function M.jq(e, filter)
   e.filtered, e.jq = res.code == 0 and res.stdout or res.stderr, filter
 end
 
-local function finish(req, e, res, dir)
+-- run scripts one after another without blocking; S.job holds the running node process so
+-- <C-c> can kill it. cb(vars, logs, result) once all are done.
+local function run_scripts(list, ctx, cb)
+  local vars, logs, result, i = {}, {}, nil, 0
+  local function nxt()
+    i = i + 1
+    local sc = list[i]
+    if not sc then return cb(vars, logs, result) end
+    local job, done
+    job = Script.run(sc, ctx, function(v, l, res)
+      done = true
+      if job and S.job == job then S.job = nil end
+      vars = vim.tbl_extend("force", vars, v)
+      vim.list_extend(logs, l)
+      result = res or result
+      nxt()
+    end)
+    if not done then S.job = job end -- lua scripts finish synchronously
+  end
+  nxt()
+end
+
+local function finish(req, e, res, dir, done)
   local raw = res.stdout or ""
   local stats = {}
   local cut = raw:find("\n__HTTPSTATS__", 1, true)
@@ -481,11 +504,11 @@ local function finish(req, e, res, dir)
   e.pending, e.verbose, e.stats = nil, res.stderr or "", type(stats) == "table" and stats or {}
   if res.signal ~= 0 then
     e.error = "Cancelled"
-    return false
+    return done(false)
   end
   if res.code ~= 0 then
     e.error = (res.stderr or ""):match("(curl: [^\n]*)%s*$") or ("curl exited " .. res.code)
-    return false
+    return done(false)
   end
   e.status, e.headers, e.body = split_response(raw)
   if req.name then
@@ -494,14 +517,22 @@ local function finish(req, e, res, dir)
       response = { headers = e.headers, body = e.body },
     }
   end
-  for _, sc in ipairs(req.post) do
-    local _, l = Script.run(sc, {
-      request = req, vars = {}, env = env_vars(dir), dir = dir,
-      origin = { file = e.file, name = req.name, line = req.line, host = req.url:match("^%a[%w+.-]*://([^/?#]+)") },
-      response = { body = e.body, status = tonumber(e.status:match("^HTTP/%S+ (%d+)")), headers = e.headers },
-    })
+  if #req.post == 0 then return M._after(req, e, done) end
+  e.post_pending = true
+  render()
+  run_scripts(req.post, {
+    request = req, vars = {}, env = env_vars(dir), dir = dir,
+    origin = { file = e.file, name = req.name, line = req.line, host = req.url:match("^%a[%w+.-]*://([^/?#]+)") },
+    response = { body = e.body, status = tonumber((e.status or ""):match("^HTTP/%S+ (%d+)")), headers = e.headers },
+  }, function(_, l)
+    e.post_pending = nil
     e.script_output = vim.list_extend(e.script_output or {}, l)
-  end
+    M._after(req, e, done)
+  end)
+end
+
+-- rest of finish(), after post-request scripts ran
+function M._after(req, e, done)
   if req.meta.jq then M.jq(e, req.meta.jq) end
   local ok, obj = pcall(vim.json.decode, e.body)
   for _, k in ipairs(req.meta.json_key) do
@@ -518,7 +549,7 @@ local function finish(req, e, res, dir)
       if f then f:write(e.body); f:close() end
     end
   end
-  return true
+  return done(true)
 end
 
 local function send(blocks, buf)
@@ -560,20 +591,22 @@ local function send(blocks, buf)
     end)
   end
 
+  local send_req
   function send_one(r, e)
-    local req_vars, logs, result = {}, {}, nil
     local t0 = vim.uv.hrtime()
-    if #r.pre > 0 then
-      vim.cmd("redraw") -- scripts block (node :wait()), so paint the ⏳ line first
-      local base = { method = r.method, url = r.url, headers = r.headers, body = table.concat(r.body, "\n") }
-      for _, sc in ipairs(r.pre) do
-        local v, l, res = Script.run(sc, { request = base, vars = doc.vars, env = env_vars(dir), dir = dir,
-          origin = { file = e.file, name = r.name, line = r.line } })
-        req_vars = vim.tbl_extend("force", req_vars, v)
-        vim.list_extend(logs, l)
-        result = res or result
+    if #r.pre == 0 then return send_req(r, e, {}, {}, nil, t0) end
+    local base = { method = r.method, url = r.url, headers = r.headers, body = table.concat(r.body, "\n") }
+    run_scripts(r.pre, { request = base, vars = doc.vars, env = env_vars(dir), dir = dir,
+      origin = { file = e.file, name = r.name, line = r.line } }, function(req_vars, logs, result)
+      if S.queue ~= queue then -- cancelled (<C-c> or a newer send) while the script ran
+        e.pending, e.error, e.script_output = nil, "Cancelled", logs
+        return render()
       end
-    end
+      send_req(r, e, req_vars, logs, result, t0)
+    end)
+  end
+
+  function send_req(r, e, req_vars, logs, result, t0)
     e.script_output = logs
     if not r.url then
       -- script-only: the script's return value is the body, its logs the fallback
@@ -606,9 +639,10 @@ local function send(blocks, buf)
       S.job = vim.system(cmd, { text = false, stdin = req.body }, vim.schedule_wrap(function(res)
         S.job = nil
         e.ms = math.floor((vim.uv.hrtime() - t) / 1e6)
-        local fine = finish(req, e, res, dir)
-        render()
-        if fine then step() else S.queue = nil end
+        finish(req, e, res, dir, function(fine)
+          render()
+          if fine then step() elseif S.queue == queue then S.queue = nil end
+        end)
       end))
     end
     if r.meta.delay then vim.defer_fn(go, r.meta.delay) else go() end

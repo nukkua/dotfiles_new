@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# Pick a dir in ~/working with fzf and open its tmux session, creating it if needed:
+#   1) vim  - nvim
+#   2) sv   - dev server / compile, detected from the project files
+#   3) term - empty shell
+# Usage: work-sessionizer [dir]
+
+WORK_DIR="$HOME/working"
+
+if [[ $# -eq 1 ]]; then
+    selected=$1
+else
+    selected=$(
+        find "$WORK_DIR" -mindepth 1 -maxdepth 1 -type d 2>/dev/null |
+        sed "s|^$WORK_DIR/||" |
+        sort |
+        fzf --height=100% --layout=reverse --border --prompt=" > "
+    )
+    [[ -n "$selected" ]] && selected="$WORK_DIR/$selected"
+fi
+
+[[ -n "$selected" && -d "$selected" ]] || exit 0
+
+# Prints the command for the sv window, or nothing if the project type is unknown.
+server_command() {
+    local dir=$1 pm=npm script
+
+    if [[ -f "$dir/package.json" ]]; then
+        if   [[ -f "$dir/pnpm-lock.yaml" ]]; then pm=pnpm
+        elif [[ -f "$dir/yarn.lock" ]]; then pm=yarn
+        elif [[ -f "$dir/bun.lock" || -f "$dir/bun.lockb" ]]; then pm=bun
+        fi
+        for script in dev start; do
+            if grep -q "\"$script\"[[:space:]]*:" "$dir/package.json"; then
+                echo "$pm run $script"
+                return
+            fi
+        done
+    elif [[ -f "$dir/build.zig" ]]; then
+        echo "zig build run"
+    elif [[ -f "$dir/Cargo.toml" ]]; then
+        echo "cargo run"
+    elif [[ -f "$dir/go.mod" ]]; then
+        echo "go run ."
+    elif [[ -f "$dir/Makefile" || -f "$dir/makefile" ]]; then
+        echo "make"
+    fi
+}
+
+# tmux session names can't contain dots or colons
+name=$(basename "$selected" | tr '.:' '__')
+
+if ! tmux has-session -t "=$name" 2>/dev/null; then
+    tmux new-session -d -s "$name" -n vim -c "$selected"
+    tmux send-keys   -t "=$name:vim" "nvim" C-m
+
+    tmux new-window  -t "=$name:" -n sv -c "$selected"
+    cmd=$(server_command "$selected")
+    [[ -n "$cmd" ]] && tmux send-keys -t "=$name:sv" "$cmd" C-m
+
+    tmux new-window  -t "=$name:" -n term -c "$selected"
+
+    tmux select-window -t "=$name:vim"
+fi
+
+if [[ -n "${TMUX:-}" ]]; then
+    tmux switch-client -t "=$name"
+else
+    tmux attach-session -t "=$name"
+fi

@@ -264,7 +264,30 @@ vim.keymap.set("n", "<leader>ac", function()
     load_competitest(); vim.cmd("CompetiTest receive contest")
 end, { desc = "Receive contest" })
 vim.keymap.set("n", "<leader>ar", "<cmd>CompetiTest run<CR>", { desc = "run the problem" })
-vim.keymap.set("n", "<leader>as", "<cmd>CompetiTest add_testcase<CR>", { desc = "run the problem" })
+-- adding: inside the add editor, <C-n> saves this testcase and opens a new empty one
+local competitest_adding = false
+local function add_testcase()
+    load_competitest(); competitest_adding = true; vim.cmd("CompetiTest add_testcase")
+end
+vim.keymap.set("n", "<leader>as", add_testcase, { desc = "Add testcase" })
+vim.keymap.set("n", "<leader>ae", function()
+    load_competitest(); competitest_adding = false; vim.cmd("CompetiTest edit_testcase")
+end, { desc = "Edit testcase" })
+vim.keymap.set("n", "<leader>ad", function()
+    load_competitest(); vim.cmd("CompetiTest delete_testcase")
+end, { desc = "Delete testcase" })
+vim.api.nvim_create_autocmd("BufFilePost", {
+    pattern = { "CompetiTestEditInput", "CompetiTestEditOutput" },
+    callback = function(ev)
+        if not competitest_adding then return end
+        vim.keymap.set({ "n", "i" }, "<C-n>", function()
+            vim.cmd("stopinsert")
+            vim.cmd("write") -- saves input + output of this testcase
+            vim.cmd("close") -- closes both popups, back to the source file
+            vim.schedule(add_testcase)
+        end, { buffer = ev.buf, desc = "Save testcase and add another" })
+    end,
+})
 
 
 

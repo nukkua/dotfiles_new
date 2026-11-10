@@ -47,6 +47,8 @@ function fish_user_key_bindings
     bind -M insert \cs accept-autosuggestion
     bind \cg '~/scripts/tmux-sessionizer'
     bind -M insert \cg '~/scripts/tmux-sessionizer'
+    bind \cf '~/scripts/work-sessionizer'
+    bind -M insert \cf '~/scripts/work-sessionizer'
 
     bind -M insert \cc 'set fish_bind_mode default; commandline -f repaint'
     bind -M default \cc 'commandline -f cancel-commandline'

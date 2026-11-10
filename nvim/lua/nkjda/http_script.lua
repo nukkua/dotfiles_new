@@ -150,55 +150,71 @@ local function run_lua(ctx)
   return vars, logs, result ~= nil and tostring(result) or nil
 end
 
--- run one script; returns request-scoped vars and log lines. Globals are updated and persisted.
+-- run one script without blocking the editor; globals are updated and persisted.
 -- script = { code = "...", file = "path" }, ctx = { request = {...}, response = {...}?, vars, env, dir }
-local function run(script, ctx)
-  local code, lang = script.code, "js"
-  local before = vim.deepcopy(M.globals)
-  if script.file then
-    local p = script.file:match("^/") and script.file or (ctx.dir .. "/" .. script.file)
-    local f = io.open(p)
-    if not f then return {}, { "✘ cannot read script " .. p } end
-    code = f:read("*a")
-    f:close()
-    if p:match("%.lua$") then lang = "lua" end
-  elseif code:match("^%s*%-%-%s*lua") then
-    lang = "lua"
+-- cb(vars, logs, result) runs on the main loop; result is the script's `return` value as a string
+-- (JSON for tables/objects). Returns the node job (vim.SystemObj) so callers can cancel it, or nil.
+function M.run(script, ctx, cb)
+  local called = false
+  local function reply(vars, logs, result)
+    if called then return end
+    called = true
+    cb(vars or {}, logs or {}, result)
   end
-  local request = { method = ctx.request.method, url = ctx.request.url, body = ctx.request.body, headers = header_map(ctx.request.headers) }
-  local response = ctx.response and { body = ctx.response.body, status = ctx.response.status, headers = header_map(ctx.response.headers) }
-  local vars, logs, result
-  if lang == "lua" then
-    vars, logs, result = run_lua({ code = code, request = request, response = response, vars = ctx.vars, env = ctx.env })
-  else
-    if vim.fn.executable("node") == 0 then return {}, { "✘ node is not installed (needed for JS scripts)" } end
+  local before = vim.deepcopy(M.globals)
+  local function commit(vars, logs, result)
+    for k in pairs(vim.tbl_extend("force", {}, before, M.globals)) do
+      if M.globals[k] == nil then M.origins[k] = nil
+      elseif ctx.origin and not vim.deep_equal(before[k], M.globals[k]) then M.origins[k] = ctx.origin end
+    end
+    save()
+    reply(vars, logs, result)
+  end
+
+  local ok, job = pcall(function()
+    local code, lang = script.code, "js"
+    if script.file then
+      local p = script.file:match("^/") and script.file or (ctx.dir .. "/" .. script.file)
+      local f = io.open(p)
+      if not f then return reply({}, { "✘ cannot read script " .. p }) end
+      code = f:read("*a")
+      f:close()
+      if p:match("%.lua$") then lang = "lua" end
+    elseif code:match("^%s*%-%-%s*lua") then
+      lang = "lua"
+    end
+    local request = { method = ctx.request.method, url = ctx.request.url, body = ctx.request.body, headers = header_map(ctx.request.headers) }
+    local response = ctx.response and { body = ctx.response.body, status = ctx.response.status, headers = header_map(ctx.response.headers) }
+    if lang == "lua" then
+      return commit(run_lua({ code = code, request = request, response = response, vars = ctx.vars, env = ctx.env }))
+    end
+    if vim.fn.executable("node") == 0 then return reply({}, { "✘ node is not installed (needed for JS scripts)" }) end
     local input = vim.json.encode({
       code = code, globals = next(M.globals) and M.globals or vim.empty_dict(),
       request = request, response = response or vim.NIL,
       vars = next(ctx.vars) and ctx.vars or vim.empty_dict(), env = next(ctx.env) and ctx.env or vim.empty_dict(),
     })
+    -- async: SDKs like firebase-admin take seconds to start/auth, a blocking :wait() froze nvim.
     -- cwd = the .http file's dir, so require("./x") resolves next to it
-    local res = vim.system({ "node", "-e", js_harness }, { text = true, stdin = input, cwd = ctx.dir }):wait(60000)
-    local ok, out = pcall(vim.json.decode, res.stdout or "")
-    if res.code ~= 0 or not ok then
-      return {}, { "✘ node failed" .. (res.code == 124 and " (timed out after 60s)" or "") .. ": " .. vim.trim(res.stderr or "") }
-    end
-    M.globals = out.globals
-    vars, logs, result = out.vars, out.logs, out.result ~= vim.NIL and out.result or nil
+    return vim.system({ "node", "-e", js_harness }, { text = true, stdin = input, cwd = ctx.dir, timeout = 60000 },
+      vim.schedule_wrap(function(res)
+        local okj, out = pcall(vim.json.decode, res.stdout or "")
+        if res.code ~= 0 or not okj or type(out) ~= "table" then
+          local why = res.code == 124 and " (timed out after 60s)" or res.signal ~= 0 and " (killed)" or ""
+          return reply({}, { "✘ node failed" .. why .. ": " .. vim.trim(res.stderr or "") })
+        end
+        local okc, err = pcall(function()
+          M.globals = type(out.globals) == "table" and out.globals or M.globals
+          commit(out.vars, out.logs, out.result ~= vim.NIL and out.result or nil)
+        end)
+        if not okc then reply({}, { "✘ script error: " .. tostring(err) }) end
+      end))
+  end)
+  if not ok then
+    reply({}, { "✘ script error: " .. tostring(job) })
+    return nil
   end
-  for k in pairs(vim.tbl_extend("force", {}, before, M.globals)) do
-    if M.globals[k] == nil then M.origins[k] = nil
-    elseif ctx.origin and not vim.deep_equal(before[k], M.globals[k]) then M.origins[k] = ctx.origin end
-  end
-  save()
-  return vars, logs, result
-end
-
--- returns vars, logs and the script's `return` value as a string (JSON for tables/objects)
-function M.run(script, ctx)
-  local ok, vars, logs, result = pcall(run, script, ctx)
-  if not ok then return {}, { "✘ script error: " .. tostring(vars) } end
-  return vars or {}, logs or {}, result
+  return type(job) == "table" and job.kill and job or nil
 end
 
 return M

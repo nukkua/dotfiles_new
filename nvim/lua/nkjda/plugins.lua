@@ -88,6 +88,22 @@ local function load_competitest()
         evaluate_template_modifiers = true,
         template_file = { cpp = "~/cf/templates/template.cpp" },
         received_contests_problems_path = "$(PROBLEM)/main.$(FEXT)",
+        compile_command = {
+            cpp = { exec = "g++", args = { "-std=c++23", "-O2", "-Wall", "-Wextra", "$(FNAME)", "-o", "$(FNOEXT)" } },
+        },
+        -- <C-w>w / <C-w><C-w> (normal mode) toggle only between the Input/Output popups, never the source file
+        editor_ui = {
+            normal_mode_mappings = {
+                switch_window = { "<C-w>w", "<C-w><C-w>" },
+                save_and_close = "<C-s>",
+                cancel = { "q", "Q" },
+            },
+            insert_mode_mappings = {
+                switch_window = {},
+                save_and_close = "<C-s>",
+                cancel = "<C-q>",
+            },
+        },
     })
     competitest_loaded = true
 end

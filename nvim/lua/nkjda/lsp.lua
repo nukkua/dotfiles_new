@@ -35,7 +35,7 @@ require("mason").setup()
 -- ensure_installed walks the registry; do it after the first screen
 vim.schedule(function() require("mason-lspconfig").setup({
   ensure_installed = {
-    "clangd", "lua_ls", "eslint", "rust_analyzer", "zls",
+    "lua_ls", "eslint", "rust_analyzer", "zls",
     "vtsls", "vue_ls", "tailwindcss", "gopls",
   },
   automatic_enable = false,
@@ -50,7 +50,12 @@ if vim.fn.executable("inotifywait") == 0 then
   })
 end
 
-vim.lsp.config("clangd", { init_options = { fallbackFlags = { "-std=c++23" } } })
+-- clangd from NixOS, not Mason: Mason's generic binary can't find the Nix libstdc++/glibc
+-- headers (no /usr/include), so <bits/stdc++.h> and std fail; the Nix wrapper injects them
+vim.lsp.config("clangd", {
+  cmd = { "/run/current-system/sw/bin/clangd" },
+  init_options = { fallbackFlags = { "-std=c++23" } },
+})
 
 vim.lsp.config("lua_ls", {
   root_markers = { ".luarc.json", ".luarc.jsonc", ".stylua.toml", "stylua.toml", "selene.toml", "selene.yml", ".git" },
